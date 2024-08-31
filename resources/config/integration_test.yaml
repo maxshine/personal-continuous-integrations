@@ -1,0 +1,10 @@
+concurrency: 1
+continue_on_failure: true
+tests:
+  general_dbt_test:
+    command: dbt_test
+    test_config:
+      test_projects:
+        - "default/offer_attachment_customizable"
+    throw_exception: true
+    test_args:

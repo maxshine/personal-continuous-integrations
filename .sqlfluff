@@ -1,0 +1,22 @@
+[sqlfluff]
+dialect = bigquery
+exclude_rules = layout.indent, layout.cte_bracket, layout.cte_newline, layout.select_targets, layout.spacing
+# set max_line_length to whatever you set in sqlfmt
+max_line_length = 120
+
+[sqlfluff:indentation]
+tab_space_size = 4
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:layout.long_lines]
+ignore_comment_lines = true
+ignore_comment_clauses = true
+
+[sqlfluff:rules:convention.terminator]
+multiline_newline = True
+
+[sqlfluff:layout:type:comma]
+line_position = trailing

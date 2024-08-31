@@ -1,0 +1,54 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+        exclude: '^(.*/|)\.?snap\_.*\.py$|^(.*/|).*\.md$'
+    -   id: end-of-file-fixer
+        exclude: '^(.*/|)\.gitignore$|^(.*/|).*\.md$|pyproject.toml'
+    -   id: check-yaml
+    -   id: check-json
+    -   id: check-added-large-files
+    -   id: check-merge-conflict
+    -   id: mixed-line-ending
+        args: ['--fix=lf']
+-   repo: local
+    hooks:
+    -   id: write-protected-files
+        name: write-protected-files
+        entry: git diff --cached --name-only --exit-code
+        language: system
+        files: "^$"
+        pass_filenames: true
+-   repo: https://github.com/tconbeer/sqlfmt
+    rev: v0.23.2
+    hooks:
+      - id: sqlfmt
+        language_version: python
+        additional_dependencies: ['.[jinjafmt]']
+        types: [sql]
+        exclude: 'dbt_packages.*$|target.*$'
+        args: ["--check"]
+-   repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.1.1
+    hooks:
+      - id: sqlfluff-lint
+        # For dbt projects, this installs the dbt "extras".
+        # You will need to select the relevant dbt adapter for your dialect
+        # (https://docs.getdbt.com/docs/available-adapters):
+        # additional_dependencies: ['<dbt-adapter>', 'sqlfluff-templater-dbt']
+        additional_dependencies : ['sqlfluff-templater-dbt']
+        types: [sql]
+        exclude: 'dbt_packages.*$|target.*$'
+      - id: sqlfluff-fix
+        # Arbitrary arguments to show an example
+        # args: [--rules, "LT02,CP02"]
+        # additional_dependencies: ['<dbt-adapter>', 'sqlfluff-templater-dbt']
+        files: "^$"
+-   repo: meta
+    hooks:
+    -   id: identity
+        # For debugging purpose, therefore it is disabled by default with empty eligibile files.
+        files: "^$"
