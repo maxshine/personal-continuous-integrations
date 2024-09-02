@@ -75,7 +75,10 @@ function is_admin_user() {
 #   0 -- no changes; 1 -- candidate file changed
 ############################################################
 function is_file_changed() {
-  git diff --name-only --exit-code --merge-base "$2" "$1" -- $3
+  dest_ref=$2
+  src_ref=$1
+  shift;shift
+  git diff --name-only --exit-code --merge-base "${dest_ref}" "${src_ref}" -- $@
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -93,7 +96,7 @@ if [[ $? -eq 0 ]]; then
 fi
 
 # Parse arguments
-args=$(getopt "k:" $*)
+args=$(getopt "k::" $*)
 if [ $? -ne 0 ]; then
   echo 'Usage: ...'
   exit 2
@@ -110,6 +113,10 @@ while :; do
   "--")
     shift; break
   ;;
+  "*")
+    echo "hit $1"
+    shift; break
+  ;;
   esac
 done
 printf "admin_list=%s\n" $ADMINISTRATIVE_USERS
@@ -122,14 +129,22 @@ if [[ $? -ne 0 ]]; then
 fi
 
 ## Checking candidates
-for filename in $@; do
-  candidate_filenames+=($filename)
-  is_file_changed "${GITHUB_SOURCE_REF}" "${GITHUB_TARGET_REF}" ${filename}
-  if [[ $? -ne 0 ]]; then
-    printf "%s file changed\n" $filename
-    exit 1
-  fi
-  printf "%s file is not changed\n" $filename
-done
-
+is_file_changed "${GITHUB_SOURCE_REF}" "${GITHUB_TARGET_REF}" $@
+if [[ $? -ne 0 ]]; then
+  printf "protected files changed\n"
+  exit 1
+fi
+printf "protected files are not changed\n"
 exit 0
+
+#for filename in $@; do
+#  candidate_filenames+=($filename)
+#  is_file_changed "${GITHUB_SOURCE_REF}" "${GITHUB_TARGET_REF}" ${filename}
+#  if [[ $? -ne 0 ]]; then
+#    printf "%s file changed\n" $filename
+#    exit 1
+#  fi
+#  printf "%s file is not changed\n" $filename
+#done
+#
+#exit 0
