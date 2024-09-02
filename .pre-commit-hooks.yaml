@@ -1,0 +1,23 @@
+-   id: github-write-protection-pr
+    name: Check write-protection files changed in a Github pull request.
+    description: |
+      This hook is used to check any files under write-protection are changed
+      in a Github pull request. 
+      It requires the following environmental variables:
+        1. ENV_GITHUB_SOURCE_REF: The head reference of this PR
+        2. ENV_GITHUB_TARGET_REF: The merge reference of this PR
+        3. ENV_GITHUB_ACTING_USER: The Github ID of users who author changes
+      It accepts following command line option:
+        1. `-k` followed by a semi-colon separated Github IDs as admins
+           For changes authored by any users in this ID list, the check is skipped.
+        2. `-s` followed by git ref to the head branch in this pull request.
+           This precedes the environmental var ENV_GITHUB_SOURCE_REF
+        3. `-t` followed by git ref to the merge branch in this pull request
+           This precedes the environmental var ENV_GITHUB_TARGET_REF
+        4. `-u` followed by git author of this pull request
+           This precedes the environmental var ENV_GITHUB_ACTING_USER
+      COMMAND SYNOPSIS:
+        <this_pre_commit_script> [-k user1;user2] [-s src_ref] [-t dst_ref] [-u author] <candidate files to be checked>
+    entry: scripts/write-protection-pr.sh
+    language: script
+    files: "^$"
