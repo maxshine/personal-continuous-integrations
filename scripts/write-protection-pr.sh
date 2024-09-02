@@ -7,8 +7,9 @@
 #   Ryan,Gao (ryangao-au@outlook.com)
 # Revision History:
 #   Date	   Author	   Comments
-# ------------------------------------------------------------------------------
-#   03/09/2024     Ryan, Gao       Created this script
+# -----------------------------------------------------------------------------
+#   01/09/2024     Ryan, Gao       Created this script
+#   03/09/2024     Ryan, Gao       Add more cmdline options preceding env
 #
 # Inputs:
 #   Environmental Variables:
