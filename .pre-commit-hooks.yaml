@@ -13,5 +13,5 @@
       SYNOPSIS:
         <this_pre_commit_script> -kuser1;user2;user3 <candidate files to be checked>
     entry: scripts/write-protection-pr.sh
-    language: system
+    language: script
     files: "^$"
