@@ -88,15 +88,8 @@ function is_file_changed() {
 
 # Main procedure starts
 
-# Check GITHUB runtime
-is_github_pr
-if [[ $? -eq 0 ]]; then
-  printf "It is not github action run, exiting...\n"
-  exit 0
-fi
-
 # Parse arguments
-args=$(getopt "k::" $*)
+args=$(getopt "k:s:t:u:" $*)
 if [ $? -ne 0 ]; then
   echo 'Usage: ...'
   exit 2
@@ -110,6 +103,18 @@ while :; do
     ADMINISTRATIVE_USERS=$2
     shift;shift
   ;;
+  "-s")
+    GITHUB_SOURCE_REF=$2
+    shift;shift
+  ;;
+  "-t")
+    GITHUB_TARGET_REF=$2
+    shift;shift
+  ;;
+  "-u")
+    GITHUB_ACTING_USER=$2
+    shift;shift
+  ;;
   "--")
     shift; break
   ;;
@@ -120,6 +125,13 @@ while :; do
   esac
 done
 printf "admin_list=%s\n" $ADMINISTRATIVE_USERS
+
+# Check GITHUB runtime
+is_github_pr
+if [[ $? -eq 0 ]]; then
+  printf "It is not github action run, exiting...\n"
+  exit 0
+fi
 
 # Check auther role
 is_admin_user ${GITHUB_ACTING_USER}
