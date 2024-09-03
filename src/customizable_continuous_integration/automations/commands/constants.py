@@ -10,9 +10,9 @@ Revision History:
 
 import typing
 
-from automations.commands.integration_test import integration_command
-from automations.commands.write_protection_hook import write_protection_command
-from common_libs.collections import ImmutableDictWrapper
+from customizable_continuous_integration.automations.commands.integration_test import integration_command
+from customizable_continuous_integration.automations.commands.write_protection_hook import write_protection_command
+from customizable_continuous_integration.common_libs.collections import ImmutableDictWrapper
 
 CLICommandHandlerType = typing.Callable[[list[str]], None]
 

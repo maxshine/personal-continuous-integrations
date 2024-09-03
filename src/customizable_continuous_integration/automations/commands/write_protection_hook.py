@@ -47,7 +47,7 @@ def get_write_protection_script_path() -> str:
     this_file_path = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
     # in a project fs, otherwise do nothing because the project installed as a package.
     if "src/" in os.fspath(this_file_path.resolve()):
-        target_cwd = this_file_path.parent.parent.parent
+        target_cwd = this_file_path.parent.parent.parent.parent
         script_path = os.fspath(target_cwd / "scripts" / "write-protection-pr.sh")
     return script_path
 

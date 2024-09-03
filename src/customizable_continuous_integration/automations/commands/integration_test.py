@@ -12,9 +12,9 @@ import pathlib
 
 import yaml
 
-from automations.integration.argument import generate_arguments_parser
-from automations.integration.executor import execute_commands_in_serial, prepare_test_environment
-from automations.integration.logging import _logger
+from customizable_continuous_integration.automations.integration.argument import generate_arguments_parser
+from customizable_continuous_integration.automations.integration.executor import execute_commands_in_serial, prepare_test_environment
+from customizable_continuous_integration.automations.integration.logging import _logger
 
 
 def integration_command(cli_args: list[str]) -> None:

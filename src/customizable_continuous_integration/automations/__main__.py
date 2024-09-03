@@ -11,7 +11,7 @@ Revision History:
 import pathlib
 import sys
 
-from automations.commands.constants import retrieve_cli_command
+from customizable_continuous_integration.automations.commands.constants import retrieve_cli_command
 
 
 def main() -> None:
