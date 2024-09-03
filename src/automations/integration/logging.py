@@ -12,7 +12,7 @@ import logging
 import sys
 
 
-def get_main_logger() -> logging.Logger:
+def get_integration_test_logger() -> logging.Logger:
     _logger = logging.getLogger("integration_test_executor")
     logging_ch = logging.StreamHandler(sys.stdout)
     logging_ch.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s %(lineno)s: %(message)s"))
@@ -21,4 +21,4 @@ def get_main_logger() -> logging.Logger:
     return _logger
 
 
-_logger = get_main_logger()
+_logger = get_integration_test_logger()

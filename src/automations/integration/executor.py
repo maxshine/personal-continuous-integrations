@@ -10,18 +10,21 @@ Revision History:
 
 import os
 import pathlib
+import sys
 import typing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from automations.commands.constatns import SentinelCommand, retrieve_test_command
-from automations.logging import _logger
+from automations.integration.test_commands.constants import SentinelCommand, retrieve_test_command
+from automations.integration.logging import _logger
 
 
 def prepare_test_environment() -> None:
     this_file_path = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
     target_cwd = this_file_path.parent.parent.parent
-    _logger.info(f"Switch to working directory {target_cwd}")
-    os.chdir(target_cwd.resolve())
+    # in a project fs, otherwise do nothing because the project installed as a package.
+    if "src/" in os.fspath(target_cwd.resolve()):
+        _logger.info(f"Switch to working directory {target_cwd}")
+        os.chdir(target_cwd.resolve())
 
 
 def do_execute_command(test_name: str, command_config: dict[typing.Any, typing.Any], continue_on_failure: bool) -> (bool, str):

@@ -12,7 +12,7 @@ import os
 import pathlib
 import typing
 
-from automations.commands.base import dbt_command
+from automations.integration.test_commands.base import dbt_command
 
 
 class DBTAutomationTestCommand(dbt_command.DBTAutomationBaseCommand):

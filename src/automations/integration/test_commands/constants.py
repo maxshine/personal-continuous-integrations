@@ -10,8 +10,8 @@ Revision History:
 
 import typing
 
-from automations.commands.base.base_command import BaseAutomationCommand
-from automations.commands.dbt_test import DBTAutomationTestCommand
+from automations.integration.test_commands.base.base_command import BaseAutomationCommand
+from automations.integration.test_commands.dbt_test import DBTAutomationTestCommand
 from common_libs.collections import ImmutableDictWrapper
 
 SentinelCommand = BaseAutomationCommand

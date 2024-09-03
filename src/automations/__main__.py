@@ -11,22 +11,15 @@ Revision History:
 import pathlib
 import sys
 
-import yaml
-
-from automations.argument import generate_arguments_parser
-from automations.executor import execute_commands_in_serial, prepare_test_environment
-from automations.logging import _logger
+from automations.commands.constants import retrieve_cli_command
 
 
 def main() -> None:
-    prepare_test_environment()
-    args_parser = generate_arguments_parser()
-    args = args_parser.parse_args(sys.argv[1:])
-    config_file_path = pathlib.Path(args.config_file).resolve()
-    with open(config_file_path, "r") as f:
-        integration_test_config = yaml.safe_load(f)
-    _logger.info(f"Integration test config:\n {integration_test_config}")
-    execute_commands_in_serial(integration_test_config)
+    cli_command = retrieve_cli_command(sys.argv[1])
+    unparsed_args = []
+    if len(sys.argv) > 2:
+        unparsed_args = sys.argv[2:]
+    cli_command(unparsed_args)
     exit(0)
 
 
