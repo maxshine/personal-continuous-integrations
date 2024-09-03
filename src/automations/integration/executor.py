@@ -14,8 +14,8 @@ import sys
 import typing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from automations.integration.test_commands.constants import SentinelCommand, retrieve_test_command
 from automations.integration.logging import _logger
+from automations.integration.test_commands.constants import SentinelCommand, retrieve_test_command
 
 
 def prepare_test_environment() -> None:

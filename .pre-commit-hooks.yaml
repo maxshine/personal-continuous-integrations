@@ -2,7 +2,7 @@
     name: Check write-protection files changed in a Github pull request.
     description: |
       This hook is used to check any files under write-protection are changed
-      in a Github pull request. 
+      in a Github pull request.
       It requires the following environmental variables:
         1. ENV_GITHUB_SOURCE_REF: The head reference of this PR
         2. ENV_GITHUB_TARGET_REF: The merge reference of this PR
