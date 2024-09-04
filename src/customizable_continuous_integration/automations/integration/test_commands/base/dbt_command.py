@@ -13,7 +13,7 @@ import typing
 
 from dbt.cli.main import dbtRunner, dbtRunnerResult
 
-from automations.commands.base import base_command
+from customizable_continuous_integration.automations.integration.test_commands.base import base_command
 
 
 class DBTAutomationBaseCommand(base_command.BaseAutomationCommand):
