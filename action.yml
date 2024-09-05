@@ -17,7 +17,6 @@ inputs:
   exclude-filter:
     required: false
     default: "^$"
-outputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
