@@ -10,6 +10,9 @@ readme = "README.md"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.scripts]
+ci_cli = "customizable_continuous_integration.automations.__main__:main"
+
 #####################
 #    Tool Configs   #
 #####################
