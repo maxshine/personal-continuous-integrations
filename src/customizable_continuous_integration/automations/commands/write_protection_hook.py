@@ -17,6 +17,7 @@ import sys
 from pre_commit.commands.run import filter_by_include_exclude
 from pre_commit.git import get_all_files
 from pre_commit.lang_base import run_xargs
+from pre_commit.util import CalledProcessError, cmd_output
 
 
 def get_integration_test_logger() -> logging.Logger:
@@ -65,7 +66,12 @@ def write_protection_command(cli_args: list[str]) -> None:
         cmd_args.extend(["-u", args.acting_user])
     if args.admin_list:
         cmd_args.extend(["-k", args.admin_list])
-    git_files = list(filter_by_include_exclude(get_all_files(), args.include_filter, args.exclude_filter))
+    try:
+        git_files = list(filter_by_include_exclude(get_all_files(), args.include_filter, args.exclude_filter))
+    except CalledProcessError:
+        cmd_output("git", "config", "--global", "--add", "safe.directory", os.getcwd())
+        git_files = list(filter_by_include_exclude(get_all_files(), args.include_filter, args.exclude_filter))
+
     if git_files:
         ret_code, std_out = run_xargs(cmd=(cmd, *cmd_args), file_args=git_files, require_serial=True, color=False)
         print(str(std_out, encoding="ascii"))
