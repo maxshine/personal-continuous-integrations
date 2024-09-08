@@ -1,0 +1,33 @@
+on:
+  release:
+    types: [released, edited]
+
+jobs:
+  publish_assets:
+    runs-on: ubuntu-latest
+    name: A job to build wheel package and publish it to release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Poetry Build
+        run: |
+          pipx install poetry
+          poetry build
+          ls dist/
+      - name: Check project version with release version
+        run: |
+          project_version=$(poetry version -s)
+          echo ${project_version} ${GITHUB_RELEASE_TAG}
+          [[ ${GITHUB_RELEASE_TAG#v} == ${project_version} ]] || exit 1
+        env:
+          GITHUB_RELEASE_TAG: ${{ github.event.release.tag_name }}
+      - name: Publish Assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
