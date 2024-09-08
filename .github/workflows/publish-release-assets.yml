@@ -20,7 +20,6 @@ jobs:
           pipx install poetry
           poetry build
           ls dist/
-          cp dist/customizable_continuous_integration-$(poetry version -s)-py3-none-any.whl dist/customizable_continuous_integration-py3-none-any.whl
       - name: Check project version with release version
         run: |
           project_version=$(poetry version -s)
