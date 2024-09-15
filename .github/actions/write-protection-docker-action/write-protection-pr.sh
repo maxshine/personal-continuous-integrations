@@ -19,6 +19,7 @@
 # Returns:
 #   OS Exit Code: 1 -- check fails; 0 -- check passes
 
+IS_FORKED_PULL_REQUEST=0
 GITHUB_SOURCE_REF=${ENV_GITHUB_SOURCE_REF}
 GITHUB_TARGET_REF=${ENV_GITHUB_TARGET_REF}
 GITHUB_ACTING_USER=${ENV_GITHUB_ACTING_USER}
@@ -76,10 +77,15 @@ function is_admin_user() {
 #   0 -- no changes; 1 -- candidate file changed
 ############################################################
 function is_file_changed() {
-  dest_ref=$2
-  src_ref=$1
-  shift;shift
-  git diff --name-only --exit-code --merge-base "${dest_ref}" "${src_ref}" -- $@
+  is_forked_diff=$1
+  dest_ref=$3
+  src_ref=$2
+  shift;shift;shift
+  if [[ ${is_forked_diff} -eq 1 ]]; then
+    git diff --name-only --exit-code "${dest_ref}" "${src_ref}" -- $@
+  else
+    git diff --name-only --exit-code --merge-base "${dest_ref}" "${src_ref}" -- $@
+  fi
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -90,7 +96,7 @@ function is_file_changed() {
 # Main procedure starts
 
 # Parse arguments
-args=$(getopt "k:s:t:u:" $*)
+args=$(getopt "k:s:t:u:r" $*)
 if [ $? -ne 0 ]; then
   echo 'Usage: ...'
   exit 2
@@ -115,6 +121,10 @@ while :; do
   "-u")
     GITHUB_ACTING_USER=$2
     shift;shift
+  ;;
+  "-r")
+    IS_FORKED_PULL_REQUEST=1
+    shift
   ;;
   "--")
     shift; break
@@ -142,7 +152,8 @@ if [[ $? -ne 0 ]]; then
 fi
 
 ## Checking candidates
-is_file_changed "${GITHUB_SOURCE_REF}" "${GITHUB_TARGET_REF}" $@
+is_file_changed ${IS_FORKED_PULL_REQUEST} "${GITHUB_SOURCE_REF}" "${GITHUB_TARGET_REF}" $@
+
 if [[ $? -ne 0 ]]; then
   printf "protected files changed\n"
   exit 1
