@@ -57,6 +57,9 @@ def get_write_protection_script_path() -> str:
 
 def add_forked_repository(forked_repository_url, remote_name):
     cmd_output("git", "config", "--global", "--add", "safe.directory", os.getcwd())
+    ret_code, ret_stdout, ret_stderr = cmd_output("git", "remote")
+    if remote_name in ret_stdout:
+        cmd_output("git", "remote", "remove", remote_name)
     cmd_output("git", "remote", "add", remote_name, forked_repository_url)
     cmd_output("git", "remote", "update", remote_name)
 
