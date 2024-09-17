@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   03/09/2024   Ryan, Gao       Initial creation
+  17/09/2024   Ryan, Gao       Add cross-forks check
 """
 
 import argparse
