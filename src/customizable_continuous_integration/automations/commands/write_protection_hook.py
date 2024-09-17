@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   03/09/2024   Ryan, Gao       Initial creation
+  17/09/2024   Ryan, Gao       Add cross-forks check
 """
 
 import argparse
@@ -71,7 +72,7 @@ def write_protection_command(cli_args: list[str]) -> None:
 
     head_ref = args.head_ref
     cmd_args = []
-    if args.forked_repository_url:
+    if args.forked_repository_url and args.forked_repository_url.lower() != "unknown":
         add_forked_repository(forked_repository_url=args.forked_repository_url, remote_name=FORKED_REPOSITORY_REMOTE_NAME)
         cmd_args = ["-r"]
         if head_ref:
