@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   03/09/2024   Ryan, Gao       Initial creation
   17/09/2024   Ryan, Gao       Add cross-forks check
+  30/09/2024   Ryan, Gao       Add support to use repo admin
 """
 
 import argparse
@@ -20,6 +21,7 @@ from pre_commit.git import get_all_files
 from pre_commit.lang_base import run_xargs
 from pre_commit.util import CalledProcessError, cmd_output
 
+from customizable_continuous_integration.common_libs.github_apis import repository
 FORKED_REPOSITORY_REMOTE_NAME = "downstream"
 
 def get_integration_test_logger() -> logging.Logger:
@@ -43,6 +45,8 @@ def generate_arguments_parser() -> argparse.ArgumentParser:
     args_parser.add_argument("--exclude-filter", default="^$", help="reg filter for files exclusion")
     args_parser.add_argument("--admin-list", default="", help="reg filter for files exclusion")
     args_parser.add_argument("--forked-repository-url", default="", help="forked repository clone url")
+    args_parser.add_argument("--github-access-token", default="", help="access token to access Github API")
+    args_parser.add_argument("--github-repository-name", default="", help="full name of host repository")
     return args_parser
 
 
@@ -77,14 +81,21 @@ def write_protection_command(cli_args: list[str]) -> None:
         cmd_args = ["-r"]
         if head_ref:
             head_ref = f"{FORKED_REPOSITORY_REMOTE_NAME}/{head_ref}"
-    if args.head_ref:
+    admin_list = args.admin_list
+    if args.github_access_token and args.github_repository_name:
+        admins = repository.get_repository_admins(args.github_access_token, args.github_repository_name)
+        if admin_list:
+            admins.append(admin_list)
+        admin_list = ";".join(admins)
+
+    if head_ref:
         cmd_args.extend(["-s", head_ref])
     if args.merge_ref:
         cmd_args.extend(["-t", args.merge_ref])
     if args.acting_user:
         cmd_args.extend(["-u", args.acting_user])
-    if args.admin_list:
-        cmd_args.extend(["-k", args.admin_list])
+    if admin_list:
+        cmd_args.extend(["-k", admin_list])
     try:
         git_files = list(filter_by_include_exclude(get_all_files(), args.include_filter, args.exclude_filter))
     except CalledProcessError:
