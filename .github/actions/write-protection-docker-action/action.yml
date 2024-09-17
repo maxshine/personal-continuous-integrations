@@ -17,6 +17,9 @@ inputs:
   exclude-filter:
     required: false
     default: "^$"
+  forked-repository-url:
+    required: false
+    default: "unknown"
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -34,3 +37,5 @@ runs:
     - ${{ inputs.include-filter }}
     - "--exclude-filter"
     - ${{ inputs.exclude-filter }}
+    - "--forked-repository-url"
+    - ${{ inputs.forked-repository-url }}
