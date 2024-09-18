@@ -44,5 +44,5 @@ runs:
     - "--exclude-filter"
     - ${{ inputs.exclude-filter }}
     - --forked-repository-url=${{ inputs.forked-repository-url }}
-    - --github-access-token=${{ inputs.forked-repository-url }}
-    - --github-repository-name=${{ inputs.forked-repository-url }}
+    - --github-access-token=${{ github-access-token }}
+    - --github-repository-name=${{ github-repository-name }}
