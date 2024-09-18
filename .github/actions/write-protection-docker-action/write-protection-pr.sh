@@ -152,6 +152,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 ## Checking candidates
+git remote -v
 is_file_changed ${IS_FORKED_PULL_REQUEST} "${GITHUB_SOURCE_REF}" "${GITHUB_TARGET_REF}" $@
 
 if [[ $? -ne 0 ]]; then
