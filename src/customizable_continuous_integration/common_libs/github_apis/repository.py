@@ -10,10 +10,14 @@ Revision History:
 
 from github import Auth, Github
 
-def get_repository_admins(github_access_token: str, repository_name: str) -> list[str]:
+
+def get_repository_by_permission(github_access_token: str, repository_name: str, permission: str = None) -> list[str]:
     auth = Auth.Token(github_access_token)
     r = Github(auth=auth).get_repo(repository_name)
-    admin_paged_list = r.get_collaborators(permission="admin")
+    if permission:
+        admin_paged_list = r.get_collaborators(permission=permission)
+    else:
+        admin_paged_list = r.get_collaborators()
     ret = []
     for i in range(admin_paged_list.totalCount):
         ret.extend([n.login for n in admin_paged_list.get_page(i)])

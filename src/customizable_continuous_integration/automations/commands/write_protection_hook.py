@@ -83,7 +83,7 @@ def write_protection_command(cli_args: list[str]) -> None:
             head_ref = f"{FORKED_REPOSITORY_REMOTE_NAME}/{head_ref}"
     admin_list = args.admin_list
     if args.github_access_token and args.github_repository_name:
-        admins = repository.get_repository_admins(args.github_access_token, args.github_repository_name)
+        admins = repository.get_repository_by_permission(args.github_access_token, args.github_repository_name, "admin")
         if admin_list:
             admins.append(admin_list)
         admin_list = ";".join(admins)
