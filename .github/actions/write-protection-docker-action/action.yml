@@ -36,7 +36,7 @@ runs:
     - ${{ inputs.merge-ref }}
     - "--acting-user"
     - ${{ inputs.acting-user }}
-    - "--admin-list"=${{ inputs.admin-list }}
+    - --admin-list=${{ inputs.admin-list }}
     - "--include-filter"
     - ${{ inputs.include-filter }}
     - "--exclude-filter"
