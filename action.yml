@@ -27,7 +27,7 @@ inputs:
     default: ""
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'Dockerfile.test'
   args:
     - write-protection
     - "--head-ref"
