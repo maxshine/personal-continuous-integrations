@@ -1,0 +1,46 @@
+# action.yml
+name: 'PR Write Protection Check'
+description: 'Check write-protection intact in the pull request'
+inputs:
+  head-ref:
+    required: true
+  merge-ref:
+    required: true
+  acting-user:
+    required: true
+  admin-list:
+    required: false
+  include-filter:
+    required: false
+    default: "^$"
+  exclude-filter:
+    required: false
+    default: "^$"
+  forked-repository-url:
+    required: false
+    default: ""
+  github-access-token:
+    required: false
+    default: ""
+  github-repository-name:
+    required: false
+    default: ""
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - write-protection
+    - "--head-ref"
+    - ${{ inputs.head-ref }}
+    - "--merge-ref"
+    - ${{ inputs.merge-ref }}
+    - "--acting-user"
+    - ${{ inputs.acting-user }}
+    - --admin-list=${{ inputs.admin-list }}
+    - "--include-filter"
+    - ${{ inputs.include-filter }}
+    - "--exclude-filter"
+    - ${{ inputs.exclude-filter }}
+    - --forked-repository-url=${{ inputs.forked-repository-url }}
+    - --github-access-token=${{ inputs.github-access-token }}
+    - --github-repository-name=${{ inputs.github-repository-name }}
