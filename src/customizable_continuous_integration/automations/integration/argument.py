@@ -13,5 +13,5 @@ import argparse
 
 def generate_arguments_parser() -> argparse.ArgumentParser:
     args_parser = argparse.ArgumentParser()
-    args_parser.add_argument("--config_file", default="ci/resources/config/integration_test.yaml")
+    args_parser.add_argument("--test-config-file", default="")
     return args_parser
