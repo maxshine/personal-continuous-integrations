@@ -20,9 +20,12 @@ from customizable_continuous_integration.automations.integration.logging import 
 def integration_command(cli_args: list[str]) -> None:
     args_parser = generate_arguments_parser()
     args = args_parser.parse_args(cli_args)
-    config_file_path = pathlib.Path(args.config_file).resolve()
-    with open(config_file_path, "r") as f:
-        integration_test_config = yaml.safe_load(f)
-    _logger.info(f"Integration test config:\n {integration_test_config}")
-    execute_commands_in_serial(integration_test_config)
+    if args.test_config_file:
+        config_file_path = pathlib.Path(args.test_config_file).resolve()
+        with open(config_file_path, "r") as f:
+            integration_test_config = yaml.safe_load(f)
+        _logger.info(f"Integration test config:\n {integration_test_config}")
+        execute_commands_in_serial(integration_test_config)
+    else:
+        _logger.info("No test config file specified")
     exit(0)
