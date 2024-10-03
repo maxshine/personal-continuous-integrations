@@ -8,6 +8,7 @@ Revision History:
   03/09/2024   Ryan, Gao       Initial creation
   17/09/2024   Ryan, Gao       Add cross-forks check
   30/09/2024   Ryan, Gao       Add support to use repo admin
+  04/10/2024   Ryan, Gao       Add maintainers into the admin list
 """
 
 import argparse
@@ -22,7 +23,9 @@ from pre_commit.lang_base import run_xargs
 from pre_commit.util import CalledProcessError, cmd_output
 
 from customizable_continuous_integration.common_libs.github_apis import repository
+
 FORKED_REPOSITORY_REMOTE_NAME = "downstream"
+
 
 def get_integration_test_logger() -> logging.Logger:
     _logger = logging.getLogger("write_protection_hook")
@@ -83,7 +86,8 @@ def write_protection_command(cli_args: list[str]) -> None:
             head_ref = f"{FORKED_REPOSITORY_REMOTE_NAME}/{head_ref}"
     admin_list = args.admin_list
     if args.github_access_token and args.github_repository_name:
-        admins = repository.get_repository_by_permission(args.github_access_token, args.github_repository_name, "admin")
+        admins = repository.get_repository_by_permission(args.github_access_token, args.github_repository_name, "maintain")
+        admins = list(set(admins))
         if admin_list:
             admins.append(admin_list)
         admin_list = ";".join(admins)
