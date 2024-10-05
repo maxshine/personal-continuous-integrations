@@ -12,7 +12,7 @@ cross-forks check by adding the forked repository via the URL set by this parame
 the difference of critical files between the current repository and thr forked repository.
 8. `github-access-token`: Optional. A Github auto token generated for action workflow 
 9. `github-repository-name`: Optional. The repository full name used along with `github-access-token` to get repository
-administrative role collaborators used to be appended with the check's `admin_list`
+administrative and maintaining role collaborators used to be appended with the check's `admin_list`
 
 
 ### Outputs
