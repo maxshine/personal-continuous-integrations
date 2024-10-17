@@ -1,6 +1,9 @@
 # action.yml
 name: 'Protect File Change By Pull Request'
 description: 'Check protected files ever changed by the pull request'
+branding:
+  icon: 'alert-octagon'
+  color: 'red'
 inputs:
   head-ref:
     required: true
