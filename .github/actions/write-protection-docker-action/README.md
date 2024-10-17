@@ -12,20 +12,20 @@
    instructed to get maintain and admin roles collaborators from the host repository. This is activated
    when both `github-access-token` and `github-repository-name` are specified.
 
-### SYNOPSIS in Workflow
+### Synopsis in Workflow
 The example shows how to use this action to protect files under `.ci` and `.github` directories
 The trusted admins will be listed via repository maintain and admin roles
 ```
-- name: Check write-protection files in the pull request
-id: check-protected-files
-uses: <reference to this action via marketplace or repository URL>
-with:
-  acting-user: ${{ github.actor }}
-  merge-ref: origin/${{ github.event.pull_request.base.ref }}
-  head-ref: ${{ github.event.pull_request.head.sha }}
-  include-filter: '^ci/.*$|^.github/.*$|^\.pre-commit-config.yaml$'
-  github-access-token: ${{ secrets.GITHUB_TOKEN }}
-  github-repository-name: ${{ github.repository }}
+- name: Protect File Change By Pull Request
+  id: check-protected-files
+  uses: <reference to this action via marketplace or repository URL>
+  with:
+    acting-user: ${{ github.actor }}
+    merge-ref: origin/${{ github.event.pull_request.base.ref }}
+    head-ref: ${{ github.event.pull_request.head.sha }}
+    include-filter: '^ci/.*$|^.github/.*$|^\.pre-commit-config.yaml$'
+    github-access-token: ${{ secrets.GITHUB_TOKEN }}
+    github-repository-name: ${{ github.repository }}
 ```
 
 ### Inputs
@@ -54,14 +54,12 @@ Please refer to the [Changelog](CHANGELOG.md) for details
 
 ### License
 
-**Prevent file change action's** license can be found under [LICENSE](LICENSE).
-Additionally, this repository was created using [actions/typescript-action](https://github.com/actions/typescript-action) as template.
-Its license is included here:
+**Protect File Change By Pull Request's** license is included here:
 
 ```
 The MIT License (MIT)
 
-Copyright (c) 2018 GitHub, Inc. and contributors
+Copyright (c) 2024 Ryan Gao
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
