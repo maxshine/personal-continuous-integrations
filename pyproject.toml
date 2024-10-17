@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "customizable_continuous_integration"
-version = "1.3.1"
+version = "1.3.2"
 description = "The CI automation project"
 authors = ["Ryan,Gao <ryangao-au@outlook.com>"]
 license = "MIT"

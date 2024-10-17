@@ -10,5 +10,5 @@ runs:
   image: 'Dockerfile'
   args:
     - integration-test
-    - "-test-config-file"
+    - "--test-config-file"
     - ${{ inputs.test-config-file }}
