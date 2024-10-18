@@ -18,12 +18,12 @@ The trusted admins will be listed via repository maintain and admin roles
 ```
 - name: Protect File Change By Pull Request
   id: check-protected-files
-  uses: <reference to this action via marketplace or repository URL>
+  uses: maxshine/publish-protect-file-change-action@v1
   with:
     acting-user: ${{ github.actor }}
     merge-ref: origin/${{ github.event.pull_request.base.ref }}
     head-ref: ${{ github.event.pull_request.head.sha }}
-    include-filter: '^ci/.*$|^.github/.*$|^\.pre-commit-config.yaml$'
+    include-filter: '^ci/.*$|^.github/.*$'
     github-access-token: ${{ secrets.GITHUB_TOKEN }}
     github-repository-name: ${{ github.repository }}
 ```
