@@ -7,9 +7,9 @@
 3. It supports the cross-forks check when `forked-repository-url` specified the forked repository and
    then the action will pull the changes from the forked repository and check it against the action
    hosting repository (where the action is defined and usually the target repository of pull request)
-4. Check can be passed for administrative users listed in the parameter `admin-list`. Meanwhile
-   to enhance the check security from users add unwanted ones into the list, the action can be
-   instructed to get maintain and admin roles collaborators from the host repository. This is activated
+4. Check can be skipped for administrative users listed in the parameter `admin-list`. Meanwhile,
+   to enhance the check security from users adding unwanted ones into the `admin-list`, the action can be
+   instructed to get `maintain` and `admin` roles collaborators from the host repository. This is activated
    when both `github-access-token` and `github-repository-name` are specified.
 
 ### Synopsis in Workflow
