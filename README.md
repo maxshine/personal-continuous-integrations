@@ -21,3 +21,4 @@
 |:----|:-------------------------------|:------------------------------------------------------------------------------|
 | 1   | hello-world-docker-action      | Check [the README](/.github/actions/hello-world-docker-action/README.md)      |
 | 2   | write-protection-docker-action | Check [the README](/.github/actions/write-protection-docker-action/README.md) |
+| 3   |test-automation-docker-action   | Check [the README](/.github/actions/test-automation-docker-action/README.md)  |

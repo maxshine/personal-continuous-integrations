@@ -1,6 +1,6 @@
 # action.yml
-name: 'PR Write Protection Check'
-description: 'Check write-protection intact in the pull request'
+name: 'Run configured integration test cases'
+description: 'An action run tests declared from configuration file'
 inputs:
   test-config-file:
     required: true
