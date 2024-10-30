@@ -6,6 +6,6 @@ ENV VIRTUAL_ENV="/app/venv"
 ENV PATH="/app/venv/bin/:$PATH:/root/.local/bin/"
 COPY . /app
 RUN apt update && apt install -y git curl && curl -sSL https://install.python-poetry.org | python3 - --version ${POETRY_VERSION}
-RUN pushd && poetry install && popd
+RUN cd /app && poetry install && cd -
 
 ENTRYPOINT ["ci_cli"]
