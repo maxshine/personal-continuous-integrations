@@ -2,7 +2,7 @@
 name: 'Run configured integration test cases'
 description: 'An action run tests declared from configuration file'
 inputs:
-  test-config-file:
+  automation-config-file:
     required: true
 
 runs:
@@ -10,5 +10,5 @@ runs:
   image: 'Dockerfile'
   args:
     - integration-test
-    - "--test-config-file"
-    - ${{ inputs.test-config-file }}
+    - "--automation-config-file"
+    - ${{ inputs.automation-config-file }}

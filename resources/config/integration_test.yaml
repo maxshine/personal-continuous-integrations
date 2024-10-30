@@ -1,10 +1,10 @@
 concurrency: 1
 continue_on_failure: false
-tests:
+automations:
   general_dbt_test:
     command: dbt_test
     test_config:
-      test_projects:
+      target_projects:
         - "default/offer_attachment_customizable"
       dbt_source:
         - name: allocation_source_data

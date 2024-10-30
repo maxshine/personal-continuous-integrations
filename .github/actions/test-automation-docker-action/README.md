@@ -13,11 +13,11 @@ TBD
 | 1   | dbt_test     | Check [the DBT Test Command README](DBT_TEST_COMMAND.md) |
 
 ### Config Schema
-| No. | Test Command              | Type       | Description                                                                                          |
-|:----|:--------------------------|:-----------|:-----------------------------------------------------------------------------------------------------|
-| 1   | concurrency               | Integer    | The amount of workers to run defined cases concurrently                                              |
-| 2   | tests                     | Dictionary | A dictionary holds test cases. Each element is keyed with test case name and the value is the config |
-| 3   | continue_on_failure       | Boolean    | Switch whether the automation exit on failure                                                        |
+| No. | Test Command        | Type       | Description                                                                                                |
+|:----|:--------------------|:-----------|:-----------------------------------------------------------------------------------------------------------|
+| 1   | concurrency         | Integer    | The amount of workers to run defined cases concurrently                                                    |
+| 2   | automations         | Dictionary | A dictionary holds automation cases. Each element is keyed with test case name and the value is the config |
+| 3   | continue_on_failure | Boolean    | Switch whether the automation exit on failure                                                              |
 
 #### Test config element Schema
 | No. | Config Field    | Type       | Description                                                                                      |
@@ -29,7 +29,7 @@ TBD
 
 
 ### Inputs
-1. `test-config-file`: Required. The local path to the test config file in the tested repository 
+1. `automation-config-file`: Required. The local path to the automation config file in the target repository 
 
 ### Outputs
 N/A

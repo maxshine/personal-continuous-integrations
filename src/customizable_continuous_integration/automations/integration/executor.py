@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   27/08/2024   Ryan, Gao       Initial creation
+  31/10/2024   Ryan, Gao       Refactor the config schema with `automations` field
 """
 
 import os
@@ -52,7 +53,7 @@ def execute_command_worker(worker_id: int, test_name: str, command_config: dict[
 
 
 def execute_commands_in_process(integration_test_config: dict[typing.Any, typing.Any]) -> None:
-    configured_tests = integration_test_config.get("tests", [])
+    configured_tests = integration_test_config.get("automations", [])
     continue_on_failure = integration_test_config.get("continue_on_failure", False)
     concurrency = integration_test_config.get("concurrency", 1)
     task_requests = {}
@@ -79,7 +80,7 @@ def execute_commands_in_process(integration_test_config: dict[typing.Any, typing
 
 
 def execute_commands_in_serial(integration_test_config: dict[typing.Any, typing.Any]) -> None:
-    configured_tests = integration_test_config.get("tests", [])
+    configured_tests = integration_test_config.get("automations", [])
     continue_on_failure = integration_test_config.get("continue_on_failure", False)
     for test_name in configured_tests:
         command_config = configured_tests[test_name]
