@@ -11,19 +11,20 @@ Revision History:
 
 import os
 import pathlib
-import sys
 import typing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from customizable_continuous_integration.automations.integration.logging import _logger
 from customizable_continuous_integration.automations.integration.test_commands.constants import SentinelCommand, retrieve_test_command
 
+def is_github_environment() -> bool:
+    return any([True if var_name.startswith("GITHUB_") else False for var_name in os.environ])
 
 def prepare_test_environment() -> None:
     this_file_path = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
     target_cwd = this_file_path.parent.parent.parent.parent
-    # in a project fs, otherwise do nothing because the project installed as a package.
-    if "src/" in os.fspath(this_file_path.resolve()):
+    # in a project fs of non-GitHub environment, otherwise do nothing because the project installed as a package.
+    if "src/" in os.fspath(this_file_path.resolve()) and not is_github_environment():
         _logger.info(f"Switch to working directory {target_cwd}")
         os.chdir(target_cwd.resolve())
 
