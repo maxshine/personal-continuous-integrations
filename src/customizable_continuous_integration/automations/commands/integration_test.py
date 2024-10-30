@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   03/09/2024   Ryan, Gao       Initial creation
+  31/10/2024   Ryan, Gao       Refactor the input parameter automation-config-file
 """
 
 import pathlib
@@ -20,8 +21,8 @@ from customizable_continuous_integration.automations.integration.logging import 
 def integration_command(cli_args: list[str]) -> None:
     args_parser = generate_arguments_parser()
     args = args_parser.parse_args(cli_args)
-    if args.test_config_file:
-        config_file_path = pathlib.Path(args.test_config_file).resolve()
+    if args.automation_config_file:
+        config_file_path = pathlib.Path(args.automation_config_file).resolve()
         with open(config_file_path, "r") as f:
             integration_test_config = yaml.safe_load(f)
         _logger.info(f"Integration test config:\n {integration_test_config}")

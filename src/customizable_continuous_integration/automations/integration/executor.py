@@ -6,23 +6,25 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   27/08/2024   Ryan, Gao       Initial creation
+  31/10/2024   Ryan, Gao       Refactor the config schema with `automations` field
 """
 
 import os
 import pathlib
-import sys
 import typing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from customizable_continuous_integration.automations.integration.logging import _logger
 from customizable_continuous_integration.automations.integration.test_commands.constants import SentinelCommand, retrieve_test_command
 
+def is_github_environment() -> bool:
+    return any([True if var_name.startswith("GITHUB_") else False for var_name in os.environ])
 
 def prepare_test_environment() -> None:
     this_file_path = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
     target_cwd = this_file_path.parent.parent.parent.parent
-    # in a project fs, otherwise do nothing because the project installed as a package.
-    if "src/" in os.fspath(this_file_path.resolve()):
+    # in a project fs of non-GitHub environment, otherwise do nothing because the project installed as a package.
+    if "src/" in os.fspath(this_file_path.resolve()) and not is_github_environment():
         _logger.info(f"Switch to working directory {target_cwd}")
         os.chdir(target_cwd.resolve())
 
@@ -52,7 +54,7 @@ def execute_command_worker(worker_id: int, test_name: str, command_config: dict[
 
 
 def execute_commands_in_process(integration_test_config: dict[typing.Any, typing.Any]) -> None:
-    configured_tests = integration_test_config.get("tests", [])
+    configured_tests = integration_test_config.get("automations", [])
     continue_on_failure = integration_test_config.get("continue_on_failure", False)
     concurrency = integration_test_config.get("concurrency", 1)
     task_requests = {}
@@ -79,7 +81,7 @@ def execute_commands_in_process(integration_test_config: dict[typing.Any, typing
 
 
 def execute_commands_in_serial(integration_test_config: dict[typing.Any, typing.Any]) -> None:
-    configured_tests = integration_test_config.get("tests", [])
+    configured_tests = integration_test_config.get("automations", [])
     continue_on_failure = integration_test_config.get("continue_on_failure", False)
     for test_name in configured_tests:
         command_config = configured_tests[test_name]
