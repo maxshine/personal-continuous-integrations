@@ -11,3 +11,6 @@
 | 2   | dbt_source      | Dictionary     | A mapping hold the same structure as DBT sources. Content will be put into `sources.yml`  |
 | 3   | dbt_variable    | Dictionary     | A mapping hold the same structure as DBT vars. Content will be put into `dbt_project.yml` |
 | 4   | dbt_dependency  | Dictionary     | A mapping hold the same structure as DBT sources. Content will be put into `package.yml`  |
+
+#### Supported DB vendor adapters by default
+1. BigQuery (since v1.4.0)
