@@ -65,3 +65,9 @@ N/A
 N/A
 - Bugfix
 N/A
+
+### v1.3.3 (feature release succeeding from v1.3.2)
+- Features
+N/A
+- Bugfix
+N/A

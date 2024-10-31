@@ -7,7 +7,7 @@
 #### Test config element Schema
 | No. | Config Field    | Type           | Description                                                                               |
 |:----|:----------------|:---------------|:------------------------------------------------------------------------------------------|
-| 1   | test_projects   | List of String | A list of DBT project path relative to the repository root                                |
+| 1   | target_projects | List of String | A list of DBT project path relative to the repository root                                |
 | 2   | dbt_source      | Dictionary     | A mapping hold the same structure as DBT sources. Content will be put into `sources.yml`  |
 | 3   | dbt_variable    | Dictionary     | A mapping hold the same structure as DBT vars. Content will be put into `dbt_project.yml` |
 | 4   | dbt_dependency  | Dictionary     | A mapping hold the same structure as DBT sources. Content will be put into `package.yml`  |
