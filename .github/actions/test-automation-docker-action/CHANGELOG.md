@@ -19,3 +19,9 @@ N/A
 N/A
 - Bugfix
 N/A
+
+### v1.3.3 (feature release succeeding from v1.3.2)
+- Features
+1. Support DBT configs from test config file for `dbt_test` command
+- Bugfix
+N/A
