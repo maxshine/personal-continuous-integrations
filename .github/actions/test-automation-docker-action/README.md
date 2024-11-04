@@ -20,12 +20,12 @@ TBD
 | 3   | continue_on_failure | Boolean    | Switch whether the automation exit on failure                                                              |
 
 #### Test config element Schema
-| No. | Config Field    | Type       | Description                                                                                      |
-|:----|:----------------|:-----------|:-------------------------------------------------------------------------------------------------|
-| 1   | command         | String     | The command to run this test case                                                                |
-| 2   | test_config     | Dictionary | A dictionary holds the config for the test command. Check command documents for specific schema. |
-| 3   | throw_exception | Boolean    | Switch whether command should throw the errors                                                   |
-| 4   | test_args       | Boolean    | Complimentary arguments to run the test cases                                                    |
+| No. | Config Field      | Type       | Description                                                                                      |
+|:----|:------------------|:-----------|:-------------------------------------------------------------------------------------------------|
+| 1   | command           | String     | The command to run this test case                                                                |
+| 2   | automation_config | Dictionary | A dictionary holds the config for the test command. Check command documents for specific schema. |
+| 3   | throw_exception   | Boolean    | Switch whether command should throw the errors                                                   |
+| 4   | automation_args   | Boolean    | Complimentary arguments to run the test cases                                                    |
 
 
 ### Inputs
