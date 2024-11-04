@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   27/08/2024   Ryan, Gao       Initial creation
   31/10/2024   Ryan, Gao       Refactor the config schema with `automations` field
+  04/11/2024   Ryan, Gao       refactor the name of `automation_config` and `automation_args`
 """
 
 import os

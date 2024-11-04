@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   30/10/2024   Ryan, Gao       Initial creation
+  04/11/2024   Ryan, Gao       automation_args compatible types
 """
 
 import os

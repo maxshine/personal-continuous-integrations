@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   27/08/2024   Ryan, Gao       Initial creation
+  04/11/2024   Ryan, Gao       Add test_name in the logger name
 """
 
 import logging
@@ -21,7 +22,7 @@ class BaseAutomationCommand:
         self._test_name = test_name
         self._command_config: dict[typing.Any, typing.Any] = command_config
         self._throw_exception = throw_exception
-        self._logger = logging.getLogger(self.CLASS_NAME)
+        self._logger = logging.getLogger(f"{self.CLASS_NAME}-{test_name}")
         self._logger.setLevel(logging.INFO)
         if not self._logger.hasHandlers():
             logging_ch = logging.StreamHandler(sys.stdout)
