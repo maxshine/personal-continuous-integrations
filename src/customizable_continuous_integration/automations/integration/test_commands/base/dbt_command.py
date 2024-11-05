@@ -8,6 +8,7 @@ Revision History:
   27/08/2024   Ryan, Gao       Initial creation
   01/11/2024   Ryan, Gao       Add workspace and configuration
   04/11/2024   Ryan, Gao       refactor the name of `run_args`
+  06/11/2024   Ryan, Gao       add the support of dbt profiles
 """
 
 import io
@@ -32,6 +33,7 @@ class DBTAutomationBaseCommand(base_command.BaseAutomationCommand):
     DBT_TEST_CONFIG_FIELD_SOURCE = "dbt_source"
     DBT_TEST_CONFIG_FIELD_VARIABLE = "dbt_variable"
     DBT_TEST_CONFIG_FIELD_DEPENDENCY = "dbt_dependency"
+    DBT_TEST_CONFIG_FIELD_PROFILE = "dbt_profile"
 
     def __init__(self, test_name: str, command_config: dict[typing.Any, typing.Any], throw_exception: bool = True) -> None:
         super().__init__(test_name, command_config, throw_exception)
@@ -121,6 +123,11 @@ class DBTAutomationBaseCommand(base_command.BaseAutomationCommand):
             with open(dbt_target_path / self.DBT_PACKAGES_CONFIG_FILENAME, "w") as f:
                 content = self._yaml_dump_object_string({"packages": dbt_test_config[self.DBT_TEST_CONFIG_FIELD_DEPENDENCY]})
                 self._logger.info(f"DBT packages config content: \n{content}")
+                f.write(content)
+        if self.DBT_TEST_CONFIG_FIELD_PROFILE in dbt_test_config:
+            with open(dbt_target_path / self.DBT_PROFILES_CONFIG_FILENAME, "w") as f:
+                content = self._yaml_dump_object_string(dbt_test_config[self.DBT_TEST_CONFIG_FIELD_PROFILE])
+                self._logger.info(f"DBT profiles config content: \n{content}")
                 f.write(content)
 
     def do_dbt_run(

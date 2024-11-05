@@ -4,21 +4,9 @@ automations:
   general_dbt_test:
     command: dbt_test
     automation_config:
+      build_before_test: true
       target_projects:
         - "default/offer_attachment_customizable"
-      dbt_source:
-        - name: allocation_source_data
-          schema: tt_dev
-          tables:
-            - name: campaign_metadata
-              identifier: CAMPAIGN_METADATA
-        - name: package_source
-          overrides: dbt_package
-          database: test_project
-          schema: tt_dev
-          tables:
-            - name: campaign_metadata
-              identifier: CAMPAIGN_METADATA
       dbt_variable:
         var_1: value_1
       dbt_dependency:
