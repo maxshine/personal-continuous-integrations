@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   27/08/2024   Ryan, Gao       Initial creation
   01/11/2024   Ryan, Gao       Add workspace and configuration
+  04/11/2024   Ryan, Gao       refactor the name of `run_args`
 """
 
 import io
@@ -128,10 +129,10 @@ class DBTAutomationBaseCommand(base_command.BaseAutomationCommand):
         project_path = project_path.resolve()
         profile_path = profile_path.resolve()
         self._logger.info(f"Run {dbt_action} against project under {project_path}")
-        test_args = [dbt_action, f"--project-dir={project_path}", f"--profiles-dir={profile_path}"]
-        test_args.extend(extra_args if extra_args else [])
+        run_args = [dbt_action, f"--project-dir={project_path}", f"--profiles-dir={profile_path}"]
+        run_args.extend(extra_args if extra_args else [])
         dbt_runner = dbtRunner()
-        test_result: dbtRunnerResult = dbt_runner.invoke(test_args)
+        test_result: dbtRunnerResult = dbt_runner.invoke(run_args)
         if not test_result.success:
             return False, f"{test_result.exception}"
         return True, f"{self.test_name} Done"

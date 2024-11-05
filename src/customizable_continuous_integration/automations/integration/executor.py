@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   27/08/2024   Ryan, Gao       Initial creation
   31/10/2024   Ryan, Gao       Refactor the config schema with `automations` field
+  04/11/2024   Ryan, Gao       refactor the name of `automation_config` and `automation_args`
 """
 
 import os
@@ -35,10 +36,10 @@ def do_execute_command(test_name: str, command_config: dict[typing.Any, typing.A
     command_impl = retrieve_test_command(command_name)
     if command_impl is SentinelCommand:
         _logger.warning(f"Skipping command {command_name} because it is not registered")
-    test_instance = command_impl(test_name=test_name, command_config=command_config["test_config"], throw_exception=command_config["throw_exception"])
+    test_instance = command_impl(test_name=test_name, command_config=command_config["automation_config"], throw_exception=command_config["throw_exception"])
     _logger.info(f"Start executing test {test_name} with {test_instance}")
     try:
-        ret, ret_msg = test_instance.execute(command_config.get("test_args", {}))
+        ret, ret_msg = test_instance.execute(command_config.get("automation_args", []))
         return ret, ret_msg
     except Exception as e:
         _logger.info(f"{test_name} FAILED with exception: {e}")

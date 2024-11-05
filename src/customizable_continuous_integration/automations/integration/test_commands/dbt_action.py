@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   30/10/2024   Ryan, Gao       Initial creation
+  04/11/2024   Ryan, Gao       automation_args compatible types
 """
 
 import os
@@ -23,11 +24,17 @@ class DBTAutomationActionCommand(dbt_command.DBTAutomationBaseCommand):
     def __init__(self, test_name: str, command_config: dict[typing.Any, typing.Any], throw_exception: bool = True) -> None:
         super().__init__(test_name, command_config, throw_exception)
 
-    def do_execution(self, command_args: dict[typing.Any, typing.Any] = None) -> typing.Tuple[bool, str]:
+    def do_execution(self, command_args: dict[typing.Any, typing.Any] | list[str] | str = None) -> typing.Tuple[bool, str]:
         scoped_test_projects = self._command_config.get("target_projects", [])
         dbt_action = self._command_config.get("dbt_action")
         self._logger.info(f"Following DBT projects will be subject to the action {dbt_action}: \n{scoped_test_projects}")
-        extra_args = [str(a) for a in command_args.values()] if command_args else []
+        extra_args = []
+        if type(command_args) is dict:
+            extra_args = [str(a) for a in command_args.values()]
+        elif type(command_args) is list:
+            extra_args = [str(a) for a in command_args]
+        elif type(command_args) is str:
+            extra_args = [command_args]
         saved_cwd = os.getcwd()
         for prj in scoped_test_projects:
             os.chdir(saved_cwd)
