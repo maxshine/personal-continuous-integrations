@@ -13,7 +13,7 @@ import logging
 import sys
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.archive import BigqueryArchivedDatasetEntity
-from customizable_continuous_integration.automations.bigquery_archiver.executor.fetch import FetchBigqueryDatasetsExecutor
+from customizable_continuous_integration.automations.bigquery_archiver.executor.fetch import FetchSourceBigqueryDatasetExecutor
 
 
 def get_bigquery_archiver_logger(logger_name: str) -> logging.Logger:
@@ -57,7 +57,8 @@ def archive_command(cli_args: list[str]) -> None:
             "gcs_prefix": args.archive_destination_gcs_prefix,
         }
     )
-    FetchBigqueryDatasetsExecutor(bigquery_archived_dataset_entity=dataset_entity, logger=_logger).execute()
+    dataset_entity = FetchSourceBigqueryDatasetExecutor(bigquery_archived_dataset_entity=dataset_entity, logger=_logger).execute()
+    _logger.info(f"Archived dataset :\n {dataset_entity.model_dump_json(indent=2)}")
     exit(0)
 
 

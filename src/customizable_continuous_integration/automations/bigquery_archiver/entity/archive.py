@@ -23,12 +23,25 @@ from customizable_continuous_integration.automations.bigquery_archiver.entity.bi
 )
 
 
+class BigquerySchemaField(pydantic.BaseModel):
+    name: str
+    field_type: str
+    mode: str = "NULLABLE"
+    description: str | None = None
+    default_value_expression: str | None = None
+    fields: tuple[Self] | None = None
+    is_nullable: bool = True
+
+
 class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     bigquery_metadata: BigqueryBaseMetadata
     gcs_prefix: str
     archived_datetime: datetime.datetime
-    archive_identity: str = ""
     is_archived: bool = False
+
+    @property
+    def is_archive_completed(self) -> bool:
+        return self.is_archived
 
     @property
     def archived_datetime_str(self) -> str:
@@ -36,7 +49,7 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
 
     @property
     def real_archive_identity(self) -> str:
-        return self.archive_identity or self.bigquery_metadata.identity
+        return self.bigquery_metadata.identity
 
     @property
     def project_id(self) -> str:
@@ -66,6 +79,9 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
 
 class BigqueryArchivedTableEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryTableMetadata
+    schema_fields: list[BigquerySchemaField] = []
+    destination_gcp_project_id: str | None = None
+    destination_bigquery_dataset: str | None = None
 
     @property
     def metadata_serialized_path(self):
@@ -78,6 +94,9 @@ class BigqueryArchivedTableEntity(BigqueryBaseArchiveEntity):
 
 class BigqueryArchivedViewEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryViewMetadata
+    schema_fields: list[BigquerySchemaField] = []
+    destination_gcp_project_id: str | None = None
+    destination_bigquery_dataset: str | None = None
 
     @property
     def metadata_serialized_path(self):

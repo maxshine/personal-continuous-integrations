@@ -16,7 +16,7 @@ class BaseExecutor(object):
         raise NotImplementedError("Please implement me")
 
 
-class FetchBigqueryDatasetsExecutor(BaseExecutor):
+class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
     def __init__(
         self,
         bigquery_archived_dataset_entity: BigqueryArchivedDatasetEntity,
