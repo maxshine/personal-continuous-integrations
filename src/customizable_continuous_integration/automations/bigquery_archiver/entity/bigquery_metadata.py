@@ -25,7 +25,7 @@ class BigqueryBaseMetadata(pydantic.BaseModel):
     identity: str
     description: str = ""
     labels: dict[str, str] = {}
-    tags: list[str] = []
+    tags: dict[str, str] = {}
 
     @classmethod
     def from_dict(cls, metadata_dict: dict) -> Self:

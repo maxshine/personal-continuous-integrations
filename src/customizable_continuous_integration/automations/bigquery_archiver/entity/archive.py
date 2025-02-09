@@ -9,6 +9,7 @@ Revision History:
 """
 
 import datetime
+import typing
 
 import google.cloud.bigquery.table
 import pydantic
@@ -23,14 +24,19 @@ from customizable_continuous_integration.automations.bigquery_archiver.entity.bi
 )
 
 
-class BigquerySchemaField(pydantic.BaseModel):
+class BigquerySchemaFieldEntity(pydantic.BaseModel):
     name: str
-    field_type: str
+    type: str
     mode: str = "NULLABLE"
     description: str | None = None
     default_value_expression: str | None = None
     fields: tuple[Self] | None = None
     is_nullable: bool = True
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        fields_dict = {k: v for k, v in data_dict.items() if k in BigquerySchemaFieldEntity.model_fields}
+        return cls(**fields_dict)
 
 
 class BigqueryBaseArchiveEntity(pydantic.BaseModel):
@@ -79,7 +85,7 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
 
 class BigqueryArchivedTableEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryTableMetadata
-    schema_fields: list[BigquerySchemaField] = []
+    schema_fields: list[BigquerySchemaFieldEntity] = []
     destination_gcp_project_id: str | None = None
     destination_bigquery_dataset: str | None = None
 
@@ -91,10 +97,17 @@ class BigqueryArchivedTableEntity(BigqueryBaseArchiveEntity):
     def data_serialized_path(self):
         return f"{self.gcs_prefix}/table={self.identity}/archive_ts={self.archived_datetime_str}/data"
 
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        table = bigquery_client.get_table(self.fully_qualified_identity)
+        self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in table.schema]
+        self.bigquery_metadata.description = table.description
+
 
 class BigqueryArchivedViewEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryViewMetadata
-    schema_fields: list[BigquerySchemaField] = []
+    schema_fields: list[BigquerySchemaFieldEntity] = []
     destination_gcp_project_id: str | None = None
     destination_bigquery_dataset: str | None = None
 
@@ -102,11 +115,21 @@ class BigqueryArchivedViewEntity(BigqueryBaseArchiveEntity):
     def metadata_serialized_path(self):
         return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/view.json"
 
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        table = bigquery_client.get_table(self.fully_qualified_identity)
+        self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in table.schema]
+        self.bigquery_metadata.description = table.description
+        self.bigquery_metadata.defining_query = table.view_query
+
 
 class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryDatasetMetadata
     tables: list[BigqueryArchivedTableEntity] = []
     views: list[BigqueryArchivedViewEntity] = []
+    destination_gcp_project_id: str | None = None
+    destination_bigquery_dataset: str | None = None
 
     @property
     def archive_prefix(self):
@@ -162,7 +185,12 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
 
         if bigquery_item.table_type == "TABLE":
             return self.generate_bigquery_archived_table(
-                bigquery_item, metadata_obj, archived_datetime=self.archived_datetime, gcs_prefix=self.generate_sub_serialization_prefix("table")
+                bigquery_item,
+                metadata_obj,
+                archived_datetime=self.archived_datetime,
+                gcs_prefix=self.generate_sub_serialization_prefix("table"),
+                destination_gcp_project_id=self.destination_gcp_project_id,
+                destination_bigquery_dataset=self.destination_bigquery_dataset,
             )
         elif bigquery_item.table_type == "VIEW":
             return self.generate_bigquery_archived_view(
@@ -171,6 +199,8 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                 defining_query="Not populated yet",
                 archived_datetime=self.archived_datetime,
                 gcs_prefix=self.generate_sub_serialization_prefix("view"),
+                destination_gcp_project_id=self.destination_gcp_project_id,
+                destination_bigquery_dataset=self.destination_bigquery_dataset,
             )
         return None
 
@@ -180,3 +210,12 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             "view": "views",
         }
         return f"{self.archive_prefix}/{sub_types_map.get(sub_type, 'entities')}"
+
+    def populate_sub_restore_info(self) -> typing.Any:
+        for t in self.tables:
+            t.destination_gcp_project_id = self.destination_gcp_project_id
+            t.destination_bigquery_dataset = self.destination_bigquery_dataset
+        for t in self.views:
+            t.destination_gcp_project_id = self.destination_gcp_project_id
+            t.destination_bigquery_dataset = self.destination_bigquery_dataset
+        return None
