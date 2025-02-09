@@ -123,7 +123,6 @@ class BigqueryArchivedViewEntity(BigqueryBaseArchiveEntity):
         self.bigquery_metadata.description = table.description
         self.bigquery_metadata.defining_query = table.view_query
 
-
 class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryDatasetMetadata
     tables: list[BigqueryArchivedTableEntity] = []
