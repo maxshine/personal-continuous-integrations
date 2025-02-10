@@ -12,7 +12,7 @@ import argparse
 import logging
 import sys
 
-from customizable_continuous_integration.automations.bigquery_archiver.entity.archive import BigqueryArchivedDatasetEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import BigqueryArchivedDatasetEntity
 from customizable_continuous_integration.automations.bigquery_archiver.executor.fetch import FetchSourceBigqueryDatasetExecutor
 
 
@@ -49,15 +49,13 @@ def archive_command(cli_args: list[str]) -> None:
     _logger = get_bigquery_archiver_logger("bigquery_archive")
     args_parser = generate_archive_arguments_parser()
     args = args_parser.parse_args(cli_args)
-    dataset_entity = BigqueryArchivedDatasetEntity.from_dict(
-        {
-            "project_id": args.archive_source_gcp_project_id,
-            "dataset": args.archive_source_bigquery_dataset,
-            "identity": args.archive_source_bigquery_dataset,
-            "gcs_prefix": args.archive_destination_gcs_prefix,
-        }
-    )
-    dataset_entity = FetchSourceBigqueryDatasetExecutor(bigquery_archived_dataset_entity=dataset_entity, logger=_logger).execute()
+    bigquery_dataset_config = {
+        "project_id": args.archive_source_gcp_project_id,
+        "dataset": args.archive_source_bigquery_dataset,
+        "identity": args.archive_source_bigquery_dataset,
+        "gcs_prefix": args.archive_destination_gcs_prefix,
+    }
+    dataset_entity = FetchSourceBigqueryDatasetExecutor(bigquery_archived_dataset_config=bigquery_dataset_config, logger=_logger).execute()
     _logger.info(f"Archived dataset :\n {dataset_entity.model_dump_json(indent=2)}")
     exit(0)
 

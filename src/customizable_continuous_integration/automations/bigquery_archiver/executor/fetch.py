@@ -4,7 +4,7 @@ import logging
 
 import google.cloud.bigquery
 
-from customizable_continuous_integration.automations.bigquery_archiver.entity.archive import (
+from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import (
     BigqueryArchivedDatasetEntity,
     BigqueryArchivedTableEntity,
     BigqueryArchivedViewEntity,
@@ -19,11 +19,11 @@ class BaseExecutor(object):
 class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
     def __init__(
         self,
-        bigquery_archived_dataset_entity: BigqueryArchivedDatasetEntity,
+        bigquery_archived_dataset_config: dict,
         logger: logging.Logger = None,
         bigquery_client: google.cloud.bigquery.Client = None,
     ):
-        self.bigquery_archived_dataset_entity = bigquery_archived_dataset_entity
+        self.bigquery_archived_dataset_entity = BigqueryArchivedDatasetEntity.from_dict(bigquery_archived_dataset_config)
         if not logger:
             logger = logging.getLogger(__class__.__name__)
         self.logger = logger

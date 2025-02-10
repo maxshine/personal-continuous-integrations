@@ -11,6 +11,7 @@ Revision History:
 import datetime
 import typing
 
+import fsspec
 import google.cloud.bigquery.table
 import pydantic
 from typing_extensions import Self
@@ -104,6 +105,22 @@ class BigqueryArchivedTableEntity(BigqueryBaseArchiveEntity):
         self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in table.schema]
         self.bigquery_metadata.description = table.description
 
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        self.is_archived = True
+        with fsspec.open(self.metadata_serialized_path, "w") as f:
+            f.write(self.model_dump_json(indent=2))
+        export_job = google.cloud.bigquery.job.ExtractJob(
+            job_id=f"archive_{self.identity}_{self.archived_datetime_str}",
+            source=self.fully_qualified_identity,
+            destination_uris=[f"{self.data_serialized_path}/*"],
+            client=bigquery_client,
+            job_config=google.cloud.bigquery.job.ExtractJobConfig(destination_format=google.cloud.bigquery.job.DestinationFormat.PARQUET),
+        )
+        ret = export_job.result()
+        return ret
+
 
 class BigqueryArchivedViewEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryViewMetadata
@@ -122,6 +139,12 @@ class BigqueryArchivedViewEntity(BigqueryBaseArchiveEntity):
         self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in table.schema]
         self.bigquery_metadata.description = table.description
         self.bigquery_metadata.defining_query = table.view_query
+
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        self.is_archived = True
+        with fsspec.open(self.metadata_serialized_path, "w") as f:
+            f.write(self.model_dump_json(indent=2))
+
 
 class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryDatasetMetadata
@@ -146,7 +169,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         d["bigquery_metadata"] = BigqueryDatasetMetadata(**metadata_dict)
         d.update(fields_dict)
         if "archived_datetime" not in d:
-            d["archived_datetime"] = datetime.datetime.now()
+            d["archived_datetime"] = datetime.datetime.now(tz=datetime.timezone.utc)
         return cls(**d)
 
     def generate_bigquery_archived_table(
