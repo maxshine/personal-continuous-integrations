@@ -77,11 +77,12 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     def from_dataset_reference(self, dataset_reference: str):
         pass
 
-    def do_archive(self):
-        raise NotImplementedError("Please implement me to archive myself")
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client) -> typing.Any:
+        raise NotImplementedError("Please implement me to fetch myself")
 
-    def do_restore(self):
-        raise NotImplementedError("Please implement me to restore myself")
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        raise NotImplementedError("Please implement me to fetch myself")
+
 
 
 class BigqueryArchivedTableEntity(BigqueryBaseArchiveEntity):
@@ -241,3 +242,8 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             t.destination_gcp_project_id = self.destination_gcp_project_id
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
         return None
+
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        self.is_archived = True
+        with fsspec.open(self.metadata_serialized_path, "w") as f:
+            f.write(self.model_dump_json(indent=2))
