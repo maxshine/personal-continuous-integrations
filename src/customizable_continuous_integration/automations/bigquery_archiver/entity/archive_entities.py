@@ -155,8 +155,11 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
     def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
         if restore_config.get("overwrite_existing", False):
-            bigquery_client.delete_table(self.fully_qualified_identity, not_found_ok=True)
+            bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
         bigquery_client.load_table_from_uri(
             source_uris=f"{self.data_serialized_path}/*",
             destination=self.fully_qualified_identity,
@@ -214,9 +217,12 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
     def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
         if restore_config.get("overwrite_existing", False):
-            bigquery_client.delete_table(self.fully_qualified_identity, not_found_ok=True)
-        table = bigquery_client.create_table(self.fully_qualified_identity)
+            bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
+        table = bigquery_client.create_table(fully_qualified_identity)
         table.description = self.bigquery_metadata.description
         table.view_query = self.bigquery_metadata.defining_query
         table.labels = self.bigquery_metadata.labels
@@ -344,6 +350,9 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.identity}"
         if restore_config.get("overwrite_existing", False):
-            bigquery_client.delete_dataset(self.fully_qualified_identity, delete_contents=True, not_found_ok=True)
-        bigquery_client.create_dataset(self.fully_qualified_identity, exists_ok=True)
+            bigquery_client.delete_dataset(fully_qualified_identity, delete_contents=True, not_found_ok=True)
+        bigquery_client.create_dataset(fully_qualified_identity, exists_ok=True)
