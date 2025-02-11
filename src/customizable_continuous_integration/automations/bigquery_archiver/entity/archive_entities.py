@@ -39,6 +39,17 @@ class BigquerySchemaFieldEntity(pydantic.BaseModel):
         fields_dict = {k: v for k, v in data_dict.items() if k in BigquerySchemaFieldEntity.model_fields}
         return cls(**fields_dict)
 
+    def to_biguqery_schema_field(self) -> google.cloud.bigquery.SchemaField:
+        schema_field = google.cloud.bigquery.SchemaField(
+            self.name,
+            self.type,
+            mode=self.mode,
+            description=self.description,
+            default_value_expression=self.default_value_expression,
+            fields=[f.to_biguqery_schema_field() for f in self.fields] if self.fields else None,
+        )
+        return schema_field
+
 
 class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     bigquery_metadata: BigqueryBaseMetadata
@@ -78,7 +89,7 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
 
     @property
     def fully_qualified_identity(self) -> str:
-        return f"{self.project_id}.{self.dataset}.{self.identity}" if self.dataset else f"{self.project_id}.{self.identity}"
+        return f"{self.project_id}.{self.dataset}.{self.identity}"
 
     def from_dataset_reference(self, dataset_reference: str):
         pass
@@ -126,13 +137,43 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
         export_job = bigquery_client.extract_table(
-            job_id=f"archive_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
+            job_id_prefix=f"archive_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
             source=self.fully_qualified_identity,
             destination_uris=[f"{self.data_serialized_path}/*"],
             job_config=google.cloud.bigquery.job.ExtractJobConfig(destination_format=self.data_archive_format, compression=self.data_compression),
         )
         ret = export_job.result()
         return ret
+
+    def load_self(self) -> Self:
+        with fsspec.open(self.metadata_serialized_path, "r") as f:
+            loaded_model = self.model_validate_strings(f.read())
+            for k, v in loaded_model.model_fields:
+                if k in BigqueryArchiveTableEntity.model_fields:
+                    setattr(self, k, v)
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_table(self.fully_qualified_identity, not_found_ok=True)
+        bigquery_client.load_table_from_uri(
+            source_uris=f"{self.data_serialized_path}/*",
+            destination=self.fully_qualified_identity,
+            job_id_prefix=f"restore_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
+            job_config=google.cloud.bigquery.job.LoadJobConfig(
+                compression=self.data_compression,
+                source_format=self.data_archive_format,
+                schema=[f.to_biguqery_schema_field() for f in self.schema_fields],
+                destination_table_description=self.bigquery_metadata.description,
+                time_partitioning=(
+                    self.bigquery_metadata.partition_config.to_biguqery_time_partitioning() if self.bigquery_metadata.partition_config else None
+                ),
+                labels=self.bigquery_metadata.labels,
+            ),
+        )
+        table = bigquery_client.get_table(self.fully_qualified_identity)
+        return table
 
 
 class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
@@ -163,6 +204,26 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
 
+    def load_self(self) -> Self:
+        with fsspec.open(self.metadata_serialized_path, "r") as f:
+            loaded_model = self.model_validate_strings(f.read())
+            for k, v in loaded_model.model_fields:
+                if k in BigqueryArchiveViewEntity.model_fields:
+                    setattr(self, k, v)
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_table(self.fully_qualified_identity, not_found_ok=True)
+        table = bigquery_client.create_table(self.fully_qualified_identity)
+        table.description = self.bigquery_metadata.description
+        table.view_query = self.bigquery_metadata.defining_query
+        table.labels = self.bigquery_metadata.labels
+        table.schema = [f.to_biguqery_schema_field() for f in self.schema_fields]
+        table = bigquery_client.update_table(table, ["description", "schema", "view_query", "labels"])
+        return table
+
 
 class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryDatasetMetadata
@@ -170,6 +231,10 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     views: list[BigqueryArchiveViewEntity] = []
     destination_gcp_project_id: str | None = None
     destination_bigquery_dataset: str | None = None
+
+    @property
+    def fully_qualified_identity(self) -> str:
+        return f"{self.project_id}.{self.identity}"
 
     @property
     def entity_type(self) -> str:
@@ -264,7 +329,21 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
         return None
 
+    def load_self(self) -> Self:
+        with fsspec.open(self.metadata_serialized_path, "r") as f:
+            loaded_model = self.model_validate_strings(f.read())
+            for k, v in loaded_model.model_fields:
+                if k in BigqueryArchivedDatasetEntity.model_fields:
+                    setattr(self, k, v)
+
     def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         self.is_archived = True
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_dataset(self.fully_qualified_identity, delete_contents=True, not_found_ok=True)
+        bigquery_client.create_dataset(self.fully_qualified_identity, exists_ok=True)
