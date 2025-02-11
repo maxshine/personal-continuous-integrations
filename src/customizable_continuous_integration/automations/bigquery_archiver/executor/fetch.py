@@ -6,8 +6,8 @@ import google.cloud.bigquery
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import (
     BigqueryArchivedDatasetEntity,
-    BigqueryArchivedTableEntity,
-    BigqueryArchivedViewEntity,
+    BigqueryArchiveTableEntity,
+    BigqueryArchiveViewEntity,
 )
 
 
@@ -38,9 +38,9 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
             entity = self.bigquery_archived_dataset_entity.generate_bigquery_archived_entity_from_table_item(e)
             if not entity:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
-            if type(entity) is BigqueryArchivedTableEntity:
+            if type(entity) is BigqueryArchiveTableEntity:
                 self.bigquery_archived_dataset_entity.tables.append(entity)
-            elif type(entity) is BigqueryArchivedViewEntity:
+            elif type(entity) is BigqueryArchiveViewEntity:
                 self.bigquery_archived_dataset_entity.views.append(entity)
             else:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")

@@ -45,6 +45,12 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     gcs_prefix: str
     archived_datetime: datetime.datetime
     is_archived: bool = False
+    actual_archive_metadata_path: str = ""
+    actual_archive_data_path: str = ""
+
+    @property
+    def entity_type(self) -> str:
+        return "base_entity"
 
     @property
     def is_archive_completed(self) -> bool:
@@ -84,12 +90,17 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
         raise NotImplementedError("Please implement me to fetch myself")
 
 
-
-class BigqueryArchivedTableEntity(BigqueryBaseArchiveEntity):
+class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryTableMetadata
     schema_fields: list[BigquerySchemaFieldEntity] = []
     destination_gcp_project_id: str | None = None
     destination_bigquery_dataset: str | None = None
+    data_archive_format: str = google.cloud.bigquery.job.DestinationFormat.AVRO
+    data_compression: str = google.cloud.bigquery.job.Compression.SNAPPY
+
+    @property
+    def entity_type(self) -> str:
+        return "table"
 
     @property
     def metadata_serialized_path(self):
@@ -110,24 +121,29 @@ class BigqueryArchivedTableEntity(BigqueryBaseArchiveEntity):
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
         self.is_archived = True
+        self.actual_archive_metadata_path = self.metadata_serialized_path
+        self.actual_archive_data_path = self.data_serialized_path
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
-        export_job = google.cloud.bigquery.job.ExtractJob(
-            job_id=f"archive_{self.identity}_{self.archived_datetime_str}",
+        export_job = bigquery_client.extract_table(
+            job_id=f"archive_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
             source=self.fully_qualified_identity,
             destination_uris=[f"{self.data_serialized_path}/*"],
-            client=bigquery_client,
-            job_config=google.cloud.bigquery.job.ExtractJobConfig(destination_format=google.cloud.bigquery.job.DestinationFormat.PARQUET),
+            job_config=google.cloud.bigquery.job.ExtractJobConfig(destination_format=self.data_archive_format, compression=self.data_compression),
         )
         ret = export_job.result()
         return ret
 
 
-class BigqueryArchivedViewEntity(BigqueryBaseArchiveEntity):
+class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryViewMetadata
     schema_fields: list[BigquerySchemaFieldEntity] = []
     destination_gcp_project_id: str | None = None
     destination_bigquery_dataset: str | None = None
+
+    @property
+    def entity_type(self) -> str:
+        return "view"
 
     @property
     def metadata_serialized_path(self):
@@ -143,16 +159,21 @@ class BigqueryArchivedViewEntity(BigqueryBaseArchiveEntity):
 
     def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         self.is_archived = True
+        self.actual_archive_metadata_path = self.metadata_serialized_path
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
 
 
 class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryDatasetMetadata
-    tables: list[BigqueryArchivedTableEntity] = []
-    views: list[BigqueryArchivedViewEntity] = []
+    tables: list[BigqueryArchiveTableEntity] = []
+    views: list[BigqueryArchiveViewEntity] = []
     destination_gcp_project_id: str | None = None
     destination_bigquery_dataset: str | None = None
+
+    @property
+    def entity_type(self) -> str:
+        return "dataset"
 
     @property
     def archive_prefix(self):
@@ -175,7 +196,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
 
     def generate_bigquery_archived_table(
         self, bigquery_item: google.cloud.bigquery.table.TableListItem, base_metadata: BigqueryBaseMetadata, **kwargs
-    ) -> BigqueryArchivedTableEntity:
+    ) -> BigqueryArchiveTableEntity:
         partition_config = None
         if bigquery_item.time_partitioning:
             partition_config = BigqueryPartitionConfig(
@@ -186,22 +207,22 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             )
         d = base_metadata.model_dump()
         d["partition_config"] = partition_config
-        extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchivedTableEntity.model_fields}
+        extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveTableEntity.model_fields}
         extra_fields.update({"bigquery_metadata": BigqueryTableMetadata.from_dict(d)})
-        return BigqueryArchivedTableEntity(**extra_fields)
+        return BigqueryArchiveTableEntity(**extra_fields)
 
     def generate_bigquery_archived_view(
         self, bigquery_item: google.cloud.bigquery.table.TableListItem, base_metadata: BigqueryBaseMetadata, defining_query: str, **kwargs
-    ) -> BigqueryArchivedViewEntity:
+    ) -> BigqueryArchiveViewEntity:
         d = base_metadata.model_dump()
         d["defining_query"] = defining_query
-        extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchivedViewEntity.model_fields}
+        extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveViewEntity.model_fields}
         extra_fields.update({"bigquery_metadata": BigqueryViewMetadata.from_dict(d)})
-        return BigqueryArchivedViewEntity(**extra_fields)
+        return BigqueryArchiveViewEntity(**extra_fields)
 
     def generate_bigquery_archived_entity_from_table_item(
         self, bigquery_item: google.cloud.bigquery.table.TableListItem
-    ) -> BigqueryArchivedTableEntity | BigqueryArchivedViewEntity | None:
+    ) -> BigqueryArchiveTableEntity | BigqueryArchiveViewEntity | None:
         metadata_obj = BigqueryBaseMetadata.from_dict(self.bigquery_metadata.model_dump())
         metadata_obj.identity = bigquery_item.table_id
         metadata_obj.labels = bigquery_item.labels
