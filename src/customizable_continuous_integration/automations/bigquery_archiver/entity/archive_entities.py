@@ -110,14 +110,14 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
     def data_serialized_path(self):
         return f"{self.gcs_prefix}/table={self.identity}/archive_ts={self.archived_datetime_str}/data"
 
-    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client) -> typing.Any:
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
         table = bigquery_client.get_table(self.fully_qualified_identity)
         self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in table.schema]
         self.bigquery_metadata.description = table.description
 
-    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
         self.is_archived = True
@@ -157,7 +157,7 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         self.bigquery_metadata.description = table.description
         self.bigquery_metadata.defining_query = table.view_query
 
-    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         self.is_archived = True
         self.actual_archive_metadata_path = self.metadata_serialized_path
         with fsspec.open(self.metadata_serialized_path, "w") as f:
@@ -264,7 +264,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
         return None
 
-    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         self.is_archived = True
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
