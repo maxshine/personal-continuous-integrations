@@ -32,6 +32,7 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
         self.bigquery_client = bigquery_client
 
     def execute(self) -> BigqueryArchivedDatasetEntity:
+        self.bigquery_archived_dataset_entity.fetch_self(self.bigquery_client)
         ds = self.bigquery_client.get_dataset(self.bigquery_archived_dataset_entity.dataset)
         for e in self.bigquery_client.list_tables(dataset=ds):
             self.logger.info(f"Table: {e.table_id}")

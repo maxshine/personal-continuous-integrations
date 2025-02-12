@@ -59,9 +59,9 @@ def archive_command(cli_args: list[str]) -> None:
         "gcs_prefix": args.archive_destination_gcs_prefix,
     }
     dataset_entity = FetchSourceBigqueryDatasetExecutor(bigquery_archived_dataset_config=bigquery_dataset_config, logger=_logger).execute()
-    _logger.info(f"Archived dataset :\n {dataset_entity.model_dump_json(indent=2)}")
     archive_executor = ArchiveSourceBigqueryDatasetExecutor(bigquery_archived_dataset_entity=dataset_entity, archive_config={}, logger=_logger)
-    archive_executor.execute()
+    dataset_entity = archive_executor.execute()
+    _logger.info(f"Archived dataset :\n {dataset_entity.model_dump_json(indent=2)}")
     exit(0)
 
 

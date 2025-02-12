@@ -49,7 +49,7 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         return False
 
     def execute(self) -> BigqueryArchivedDatasetEntity:
-        self.logger.info(f"Retoring entities in the dataset {self.bigquery_archived_dataset_entity.fully_qualified_identity}")
+        self.logger.info(f"Restoring entities in the dataset {self.bigquery_archived_dataset_entity.fully_qualified_identity}")
 
         task_requests = {}
         failed_tasks_results = {}

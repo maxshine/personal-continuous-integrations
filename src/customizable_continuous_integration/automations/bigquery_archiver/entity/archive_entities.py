@@ -353,6 +353,13 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                 if k in BigqueryArchivedDatasetEntity.model_fields:
                     setattr(self, k, getattr(loaded_model, k))
 
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        dataset = bigquery_client.get_dataset(self.fully_qualified_identity)
+        self.bigquery_metadata.description = dataset.description
+        self.bigquery_metadata.labels = dataset.labels
+
     def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         self.is_archived = True
         with fsspec.open(self.metadata_serialized_path, "w") as f:
