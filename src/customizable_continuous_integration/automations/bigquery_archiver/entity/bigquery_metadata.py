@@ -19,7 +19,7 @@ class BigqueryPartitionConfig(pydantic.BaseModel):
     partition_expiration_ms: int
     partition_require_filter: bool
 
-    def to_bigquery_partition_config(self) -> google.cloud.bigquery.table.TimePartitioning:
+    def to_bigquery_time_partitioning(self) -> google.cloud.bigquery.table.TimePartitioning:
         return google.cloud.bigquery.table.TimePartitioning(
             type_=self.partition_type,
             field=self.partition_field,

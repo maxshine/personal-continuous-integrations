@@ -47,7 +47,7 @@ class BigquerySchemaFieldEntity(pydantic.BaseModel):
             mode=self.mode,
             description=self.description,
             default_value_expression=self.default_value_expression,
-            fields=[f.to_biguqery_schema_field() for f in self.fields] if self.fields else None,
+            fields=[f.to_biguqery_schema_field() for f in self.fields] if self.fields else [],
         )
         return schema_field
 
@@ -147,7 +147,9 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
             job_id_prefix=f"archive_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
             source=self.fully_qualified_identity,
             destination_uris=[f"{self.data_serialized_path}/*"],
-            job_config=google.cloud.bigquery.job.ExtractJobConfig(destination_format=self.data_archive_format, compression=self.data_compression),
+            job_config=google.cloud.bigquery.job.ExtractJobConfig(
+                destination_format=self.data_archive_format, compression=self.data_compression, use_avro_logical_types=True
+            ),
         )
         ret = export_job.result()
         return ret
@@ -169,21 +171,21 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
-        bigquery_client.load_table_from_uri(
+        load_job = bigquery_client.load_table_from_uri(
             source_uris=f"{self.data_serialized_path}/*",
-            destination=self.fully_qualified_identity,
+            destination=fully_qualified_identity,
             job_id_prefix=f"restore_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
             job_config=google.cloud.bigquery.job.LoadJobConfig(
-                compression=self.data_compression,
                 source_format=self.data_archive_format,
-                schema=[f.to_biguqery_schema_field() for f in self.schema_fields],
+                schema=[f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None,
                 destination_table_description=self.bigquery_metadata.description,
                 time_partitioning=(
-                    self.bigquery_metadata.partition_config.to_biguqery_time_partitioning() if self.bigquery_metadata.partition_config else None
+                    self.bigquery_metadata.partition_config.to_bigquery_time_partitioning() if self.bigquery_metadata.partition_config else None
                 ),
                 labels=self.bigquery_metadata.labels,
             ),
         )
+        ret = load_job.result()
         table = bigquery_client.get_table(self.fully_qualified_identity)
         return table
 
@@ -233,11 +235,11 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
-        table = bigquery_client.create_table(fully_qualified_identity)
+        table = bigquery_client.create_table(fully_qualified_identity, exists_ok=True)
         table.description = self.bigquery_metadata.description
         table.view_query = self.bigquery_metadata.defining_query
         table.labels = self.bigquery_metadata.labels
-        table.schema = [f.to_biguqery_schema_field() for f in self.schema_fields]
+        table.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
         table = bigquery_client.update_table(table, ["description", "schema", "view_query", "labels"])
         return table
 
