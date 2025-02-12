@@ -40,8 +40,10 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
             if not entity:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
             if type(entity) is BigqueryArchiveTableEntity:
+                entity.fetch_self(self.bigquery_client)
                 self.bigquery_archived_dataset_entity.tables.append(entity)
             elif type(entity) is BigqueryArchiveViewEntity:
+                entity.fetch_self(self.bigquery_client)
                 self.bigquery_archived_dataset_entity.views.append(entity)
             else:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")

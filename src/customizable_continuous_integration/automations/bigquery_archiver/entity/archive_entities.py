@@ -182,11 +182,13 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
                 time_partitioning=(
                     self.bigquery_metadata.partition_config.to_bigquery_time_partitioning() if self.bigquery_metadata.partition_config else None
                 ),
-                labels=self.bigquery_metadata.labels,
+                use_avro_logical_types=True,
             ),
         )
-        ret = load_job.result()
-        table = bigquery_client.get_table(self.fully_qualified_identity)
+        load_job.result()
+        table = bigquery_client.get_table(fully_qualified_identity)
+        table.labels = self.bigquery_metadata.labels
+        bigquery_client.update_table(table, ["labels"])
         return table
 
 
@@ -235,12 +237,13 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
-        table = bigquery_client.create_table(fully_qualified_identity, exists_ok=True)
-        table.description = self.bigquery_metadata.description
-        table.view_query = self.bigquery_metadata.defining_query
-        table.labels = self.bigquery_metadata.labels
-        table.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
-        table = bigquery_client.update_table(table, ["description", "schema", "view_query", "labels"])
+        view = google.cloud.bigquery.Table(fully_qualified_identity)
+        view.view_query = self.bigquery_metadata.defining_query
+        view = bigquery_client.create_table(view, exists_ok=True)
+        view.description = self.bigquery_metadata.description
+        view.labels = self.bigquery_metadata.labels
+        view.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
+        table = bigquery_client.update_table(view, ["description", "schema", "labels"])
         return table
 
 

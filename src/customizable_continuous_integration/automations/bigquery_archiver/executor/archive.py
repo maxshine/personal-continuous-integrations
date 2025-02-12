@@ -35,7 +35,6 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
 
     def archive_single_entity(self, entity: BigqueryBaseArchiveEntity) -> typing.Any:
         if type(entity) is BigqueryArchiveTableEntity or type(entity) is BigqueryArchiveViewEntity:
-            entity.fetch_self(self.bigquery_client)
             entity.archive_self(self.bigquery_client)
             return True
         self.logger.warning(f"{entity.identity} is not supported type {type(entity)}")
