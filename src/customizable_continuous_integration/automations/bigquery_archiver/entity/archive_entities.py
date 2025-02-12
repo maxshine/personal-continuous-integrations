@@ -9,6 +9,7 @@ Revision History:
 """
 
 import datetime
+import json
 import typing
 
 import fsspec
@@ -97,7 +98,13 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client) -> typing.Any:
         raise NotImplementedError("Please implement me to fetch myself")
 
-    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
+        raise NotImplementedError("Please implement me to fetch myself")
+
+    def load_self(self, bigquery_client: google.cloud.bigquery.client.Client) -> typing.Any:
+        raise NotImplementedError("Please implement me to fetch myself")
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, _config: dict = None) -> typing.Any:
         raise NotImplementedError("Please implement me to fetch myself")
 
 
@@ -145,16 +152,18 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         ret = export_job.result()
         return ret
 
-    def load_self(self) -> Self:
+    def load_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> Self:
         with fsspec.open(self.metadata_serialized_path, "r") as f:
-            loaded_model = self.model_validate_strings(f.read())
-            for k, v in loaded_model.model_fields:
-                if k in BigqueryArchiveTableEntity.model_fields:
-                    setattr(self, k, v)
+            loaded_model = self.model_validate(json.load(f))
+            for k in loaded_model.model_fields:
+                if k in BigqueryArchivedDatasetEntity.model_fields:
+                    setattr(self, k, getattr(loaded_model, k))
 
     def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
@@ -207,16 +216,18 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
 
-    def load_self(self) -> Self:
+    def load_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> Self:
         with fsspec.open(self.metadata_serialized_path, "r") as f:
-            loaded_model = self.model_validate_strings(f.read())
-            for k, v in loaded_model.model_fields:
-                if k in BigqueryArchiveViewEntity.model_fields:
-                    setattr(self, k, v)
+            loaded_model = self.model_validate(json.load(f))
+            for k in loaded_model.model_fields:
+                if k in BigqueryArchivedDatasetEntity.model_fields:
+                    setattr(self, k, getattr(loaded_model, k))
 
     def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
@@ -335,12 +346,12 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
         return None
 
-    def load_self(self) -> Self:
+    def load_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> Self:
         with fsspec.open(self.metadata_serialized_path, "r") as f:
-            loaded_model = self.model_validate_strings(f.read())
-            for k, v in loaded_model.model_fields:
+            loaded_model = self.model_validate(json.load(f))
+            for k in loaded_model.model_fields:
                 if k in BigqueryArchivedDatasetEntity.model_fields:
-                    setattr(self, k, v)
+                    setattr(self, k, getattr(loaded_model, k))
 
     def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         self.is_archived = True
@@ -350,9 +361,14 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
-            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.identity}"
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}"
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_dataset(fully_qualified_identity, delete_contents=True, not_found_ok=True)
-        bigquery_client.create_dataset(fully_qualified_identity, exists_ok=True)
+        dataset = bigquery_client.create_dataset(fully_qualified_identity, exists_ok=True)
+        dataset.description = self.bigquery_metadata.description
+        dataset.labels = self.bigquery_metadata.labels
+        bigquery_client.update_dataset(dataset, ["description", "labels"])

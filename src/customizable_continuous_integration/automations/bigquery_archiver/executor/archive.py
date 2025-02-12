@@ -1,17 +1,17 @@
-"""This module hosts fetch dataset objects action"""
+"""This module hosts achive dataset objects action"""
 
 import logging
 import typing
-from concurrent.futures.thread import ThreadPoolExecutor
 from concurrent.futures import as_completed
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import google.cloud.bigquery
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import (
     BigqueryArchivedDatasetEntity,
-    BigqueryBaseArchiveEntity,
     BigqueryArchiveTableEntity,
     BigqueryArchiveViewEntity,
+    BigqueryBaseArchiveEntity,
 )
 from customizable_continuous_integration.automations.bigquery_archiver.executor.fetch import BaseExecutor
 
@@ -62,14 +62,20 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
                     if ret:
                         self.logger.info(f"{completed_task_req.entity_type} {completed_task_req.identity} Archive Result: {ret}")
                     elif continue_on_failure:
-                        self.logger.error(f"{completed_task_req.entity_type} {completed_task_req.identity} Archive FAILED: {ret}, execution will be continued")
+                        self.logger.error(
+                            f"{completed_task_req.entity_type} {completed_task_req.identity} Archive FAILED: {ret}, execution will be continued"
+                        )
                         failed_tasks_results[completed_task_req.identity] = ret
                     else:
-                        self.logger.error(f"{completed_task_req.entity_type} {completed_task_req.identity} Archive FAILED: {ret}, execution will be stopped")
+                        self.logger.error(
+                            f"{completed_task_req.entity_type} {completed_task_req.identity} Archive FAILED: {ret}, execution will be stopped"
+                        )
                         executor.shutdown(wait=False, cancel_futures=True)
                         exit(1)
                 except Exception as e:
-                    self.logger.error(f"{completed_task_req.entity_type} {completed_task_req.identity} FAILED with exception: {e}, execution will be stopped")
+                    self.logger.error(
+                        f"{completed_task_req.entity_type} {completed_task_req.identity} FAILED with exception: {e}, execution will be stopped"
+                    )
                     executor.shutdown(wait=False, cancel_futures=True)
                     exit(1)
         if failed_tasks_results:
