@@ -9,6 +9,7 @@ Revision History:
 """
 
 import datetime
+import json
 import typing
 
 import fsspec
@@ -38,6 +39,17 @@ class BigquerySchemaFieldEntity(pydantic.BaseModel):
     def from_dict(cls, data_dict: dict) -> Self:
         fields_dict = {k: v for k, v in data_dict.items() if k in BigquerySchemaFieldEntity.model_fields}
         return cls(**fields_dict)
+
+    def to_biguqery_schema_field(self) -> google.cloud.bigquery.SchemaField:
+        schema_field = google.cloud.bigquery.SchemaField(
+            self.name,
+            self.type,
+            mode=self.mode,
+            description=self.description,
+            default_value_expression=self.default_value_expression,
+            fields=[f.to_biguqery_schema_field() for f in self.fields] if self.fields else [],
+        )
+        return schema_field
 
 
 class BigqueryBaseArchiveEntity(pydantic.BaseModel):
@@ -78,7 +90,7 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
 
     @property
     def fully_qualified_identity(self) -> str:
-        return f"{self.project_id}.{self.dataset}.{self.identity}" if self.dataset else f"{self.project_id}.{self.identity}"
+        return f"{self.project_id}.{self.dataset}.{self.identity}"
 
     def from_dataset_reference(self, dataset_reference: str):
         pass
@@ -86,7 +98,13 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client) -> typing.Any:
         raise NotImplementedError("Please implement me to fetch myself")
 
-    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
+        raise NotImplementedError("Please implement me to fetch myself")
+
+    def load_self(self, bigquery_client: google.cloud.bigquery.client.Client) -> typing.Any:
+        raise NotImplementedError("Please implement me to fetch myself")
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, _config: dict = None) -> typing.Any:
         raise NotImplementedError("Please implement me to fetch myself")
 
 
@@ -126,13 +144,52 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
         export_job = bigquery_client.extract_table(
-            job_id=f"archive_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
+            job_id_prefix=f"archive_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
             source=self.fully_qualified_identity,
             destination_uris=[f"{self.data_serialized_path}/*"],
-            job_config=google.cloud.bigquery.job.ExtractJobConfig(destination_format=self.data_archive_format, compression=self.data_compression),
+            job_config=google.cloud.bigquery.job.ExtractJobConfig(
+                destination_format=self.data_archive_format, compression=self.data_compression, use_avro_logical_types=True
+            ),
         )
         ret = export_job.result()
         return ret
+
+    def load_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> Self:
+        with fsspec.open(self.metadata_serialized_path, "r") as f:
+            loaded_model = self.model_validate(json.load(f))
+            for k in loaded_model.model_fields:
+                if k in BigqueryArchivedDatasetEntity.model_fields:
+                    setattr(self, k, getattr(loaded_model, k))
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
+        load_job = bigquery_client.load_table_from_uri(
+            source_uris=f"{self.data_serialized_path}/*",
+            destination=fully_qualified_identity,
+            job_id_prefix=f"restore_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
+            job_config=google.cloud.bigquery.job.LoadJobConfig(
+                source_format=self.data_archive_format,
+                schema=[f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None,
+                destination_table_description=self.bigquery_metadata.description,
+                time_partitioning=(
+                    self.bigquery_metadata.partition_config.to_bigquery_time_partitioning() if self.bigquery_metadata.partition_config else None
+                ),
+                use_avro_logical_types=True,
+            ),
+        )
+        load_job.result()
+        table = bigquery_client.get_table(fully_qualified_identity)
+        table.labels = self.bigquery_metadata.labels
+        bigquery_client.update_table(table, ["labels"])
+        return table
 
 
 class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
@@ -163,6 +220,32 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
 
+    def load_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> Self:
+        with fsspec.open(self.metadata_serialized_path, "r") as f:
+            loaded_model = self.model_validate(json.load(f))
+            for k in loaded_model.model_fields:
+                if k in BigqueryArchivedDatasetEntity.model_fields:
+                    setattr(self, k, getattr(loaded_model, k))
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
+        view = google.cloud.bigquery.Table(fully_qualified_identity)
+        view.view_query = self.bigquery_metadata.defining_query
+        view = bigquery_client.create_table(view, exists_ok=True)
+        view.description = self.bigquery_metadata.description
+        view.labels = self.bigquery_metadata.labels
+        view.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
+        table = bigquery_client.update_table(view, ["description", "schema", "labels"])
+        return table
+
 
 class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryDatasetMetadata
@@ -170,6 +253,10 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     views: list[BigqueryArchiveViewEntity] = []
     destination_gcp_project_id: str | None = None
     destination_bigquery_dataset: str | None = None
+
+    @property
+    def fully_qualified_identity(self) -> str:
+        return f"{self.project_id}.{self.identity}"
 
     @property
     def entity_type(self) -> str:
@@ -264,7 +351,36 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
         return None
 
+    def load_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> Self:
+        with fsspec.open(self.metadata_serialized_path, "r") as f:
+            loaded_model = self.model_validate(json.load(f))
+            for k in loaded_model.model_fields:
+                if k in BigqueryArchivedDatasetEntity.model_fields:
+                    setattr(self, k, getattr(loaded_model, k))
+
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        dataset = bigquery_client.get_dataset(self.fully_qualified_identity)
+        self.bigquery_metadata.description = dataset.description
+        self.bigquery_metadata.labels = dataset.labels
+
     def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         self.is_archived = True
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}"
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_dataset(fully_qualified_identity, delete_contents=True, not_found_ok=True)
+        dataset = bigquery_client.create_dataset(fully_qualified_identity, exists_ok=True)
+        dataset.description = self.bigquery_metadata.description
+        dataset.labels = self.bigquery_metadata.labels
+        bigquery_client.update_dataset(dataset, ["description", "labels"])

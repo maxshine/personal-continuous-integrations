@@ -1,4 +1,4 @@
-"""This module hosts achive dataset objects action"""
+"""This module hosts retore dataset objects action"""
 
 import logging
 import typing
@@ -16,16 +16,17 @@ from customizable_continuous_integration.automations.bigquery_archiver.entity.ar
 from customizable_continuous_integration.automations.bigquery_archiver.executor.fetch import BaseExecutor
 
 
-class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
+class RestoreBigqueryDatasetExecutor(BaseExecutor):
     def __init__(
         self,
-        bigquery_archived_dataset_entity: BigqueryArchivedDatasetEntity,
-        archive_config: dict,
+        bigquery_archived_dataset_config: dict,
+        restore_config: dict,
         logger: logging.Logger = None,
         bigquery_client: google.cloud.bigquery.Client = None,
     ):
-        self.bigquery_archived_dataset_entity = bigquery_archived_dataset_entity
-        self.archive_config = archive_config
+        self.bigquery_archived_dataset_entity = BigqueryArchivedDatasetEntity.model_validate(bigquery_archived_dataset_config)
+        self.bigquery_archived_dataset_entity.populate_sub_restore_info()
+        self.restore_config = restore_config
         if not logger:
             logger = logging.getLogger(__class__.__name__)
         self.logger = logger
@@ -33,27 +34,37 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
             bigquery_client = google.cloud.bigquery.Client(project=self.bigquery_archived_dataset_entity.project_id)
         self.bigquery_client = bigquery_client
 
-    def archive_single_entity(self, entity: BigqueryBaseArchiveEntity) -> typing.Any:
+    def load_single_entity(self, entity: BigqueryBaseArchiveEntity) -> typing.Any:
         if type(entity) is BigqueryArchiveTableEntity or type(entity) is BigqueryArchiveViewEntity:
-            entity.archive_self(self.bigquery_client)
+            entity.load_self(self.bigquery_client)
             return True
-        self.logger.warning(f"{entity.identity} is not supported type {type(entity)}")
+        self.logger.warning(f"restore {entity.identity} is not supported type {type(entity)}")
+        return False
+
+    def restore_single_entity(self, entity: BigqueryBaseArchiveEntity, restore_config: dict = None) -> typing.Any:
+        if type(entity) is BigqueryArchiveTableEntity or type(entity) is BigqueryArchiveViewEntity:
+            entity.restore_self(self.bigquery_client, restore_config)
+            return True
+        self.logger.warning(f"restore {entity.identity} is not supported type {type(entity)}")
         return False
 
     def execute(self) -> BigqueryArchivedDatasetEntity:
-        self.logger.info(f"Archiving entities in the dataset {self.bigquery_archived_dataset_entity.fully_qualified_identity}")
 
         task_requests = {}
         failed_tasks_results = {}
-        concurrency = self.archive_config.get("concurrency", 1)
-        continue_on_failure = self.archive_config.get("continue_on_failure", False)
+        concurrency = self.restore_config.get("concurrency", 1)
+        continue_on_failure = self.restore_config.get("continue_on_failure", False)
+
+        self.logger.info(f"Restoring dataset itself {self.bigquery_archived_dataset_entity.fully_qualified_identity}")
+        self.bigquery_archived_dataset_entity.restore_self(self.bigquery_client, self.restore_config)
+        self.logger.info(f"Restoring entities in the dataset {self.bigquery_archived_dataset_entity.fully_qualified_identity}")
         with ThreadPoolExecutor(max_workers=concurrency) as executor:
             for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.tables):
-                task_req = table_entity
-                task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
+                task_req = (table_entity, self.restore_config)
+                task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
             for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.views):
-                task_req = view_entity
-                task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
+                task_req = (view_entity, self.restore_config)
+                task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
             for completed_task in as_completed(task_requests.keys()):
                 completed_task_req = task_requests[completed_task]
                 try:
@@ -80,6 +91,4 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
         if failed_tasks_results:
             self.logger.error(f"These archive processes FAILED: {list(failed_tasks_results.keys())}")
             exit(1)
-        self.bigquery_archived_dataset_entity.is_archived = True
-        self.bigquery_archived_dataset_entity.archive_self(self.bigquery_client)
         return self.bigquery_archived_dataset_entity

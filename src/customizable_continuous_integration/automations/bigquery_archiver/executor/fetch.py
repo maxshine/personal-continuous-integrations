@@ -32,6 +32,7 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
         self.bigquery_client = bigquery_client
 
     def execute(self) -> BigqueryArchivedDatasetEntity:
+        self.bigquery_archived_dataset_entity.fetch_self(self.bigquery_client)
         ds = self.bigquery_client.get_dataset(self.bigquery_archived_dataset_entity.dataset)
         for e in self.bigquery_client.list_tables(dataset=ds):
             self.logger.info(f"Table: {e.table_id}")
@@ -39,8 +40,10 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
             if not entity:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
             if type(entity) is BigqueryArchiveTableEntity:
+                entity.fetch_self(self.bigquery_client)
                 self.bigquery_archived_dataset_entity.tables.append(entity)
             elif type(entity) is BigqueryArchiveViewEntity:
+                entity.fetch_self(self.bigquery_client)
                 self.bigquery_archived_dataset_entity.views.append(entity)
             else:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
