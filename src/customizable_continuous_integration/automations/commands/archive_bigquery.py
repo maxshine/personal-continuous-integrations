@@ -61,6 +61,7 @@ def archive_command(cli_args: list[str]) -> None:
     archive_executor = ArchiveSourceBigqueryDatasetExecutor(bigquery_archived_dataset_entity=dataset_entity, archive_config={}, logger=_logger)
     dataset_entity = archive_executor.execute()
     _logger.info(f"Archived dataset :\n {dataset_entity.model_dump_json(indent=2)}")
+    _logger.info(f"Archived dataset is located: {dataset_entity.metadata_serialized_path.rstrip('/dataset.json')}")
     exit(0)
 
 

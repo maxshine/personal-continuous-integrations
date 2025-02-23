@@ -140,6 +140,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                     gcs_prefix=self.generate_sub_serialization_prefix("function"),
                     destination_gcp_project_id=self.destination_gcp_project_id,
                     destination_bigquery_dataset=self.destination_bigquery_dataset,
+                    metadata_schema=self.metadata_version,
                 )
             elif bigquery_item.type_ == "PROCEDURE":
                 return self.generate_bigquery_archived_stored_procedure(
@@ -149,6 +150,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                     gcs_prefix=self.generate_sub_serialization_prefix("stored_procedure"),
                     destination_gcp_project_id=self.destination_gcp_project_id,
                     destination_bigquery_dataset=self.destination_bigquery_dataset,
+                    metadata_schema=self.metadata_version,
                 )
         else:
             if bigquery_item.table_type == "TABLE":
@@ -159,6 +161,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                     gcs_prefix=self.generate_sub_serialization_prefix("table"),
                     destination_gcp_project_id=self.destination_gcp_project_id,
                     destination_bigquery_dataset=self.destination_bigquery_dataset,
+                    metadata_schema=self.metadata_version,
                 )
             elif bigquery_item.table_type == "VIEW":
                 return self.generate_bigquery_archived_view(
@@ -169,6 +172,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                     gcs_prefix=self.generate_sub_serialization_prefix("view"),
                     destination_gcp_project_id=self.destination_gcp_project_id,
                     destination_bigquery_dataset=self.destination_bigquery_dataset,
+                    metadata_schema=self.metadata_version,
                 )
             elif bigquery_item.table_type == "MATERIALIZED_VIEW":
                 return self.generate_bigquery_archived_materialized_view(
@@ -179,6 +183,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                     gcs_prefix=self.generate_sub_serialization_prefix("materialized_view"),
                     destination_gcp_project_id=self.destination_gcp_project_id,
                     destination_bigquery_dataset=self.destination_bigquery_dataset,
+                    metadata_schema=self.metadata_version,
                 )
             elif bigquery_item.table_type == "STORED_PROCEDURE":
                 return self.generate_bigquery_archived_stored_procedure(
@@ -189,6 +194,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                     gcs_prefix=self.generate_sub_serialization_prefix("stored_procedure"),
                     destination_gcp_project_id=self.destination_gcp_project_id,
                     destination_bigquery_dataset=self.destination_bigquery_dataset,
+                    metadata_schema=self.metadata_version,
                 )
         return None
 

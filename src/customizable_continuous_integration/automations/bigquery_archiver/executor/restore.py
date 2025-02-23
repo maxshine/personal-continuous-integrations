@@ -46,6 +46,7 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.bigquery_archived_dataset_entity.project_id)
         self.bigquery_client = bigquery_client
+        self.archived_entity_metadata_version = "v1"
 
     def load_single_entity(self, entity: BigqueryBaseArchiveEntity) -> typing.Any:
         if type(entity) is BigqueryArchiveTableEntity or type(entity) is BigqueryArchiveViewEntity:
@@ -63,6 +64,10 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
             BigqueryArchiveMaterializedViewEntity,
         )
         if type(entity) in supported_archive_entity_types:
+            if self.archived_entity_metadata_version != entity.metadata_version:
+                raise TypeError(
+                    f"{entity.identity} metadata version {entity.metadata_version} is not compatible with {self.archived_entity_metadata_version}"
+                )
             entity.restore_self(self.bigquery_client, restore_config)
             return True
         self.logger.warning(f"restore {entity.identity} is not supported type {type(entity)}")

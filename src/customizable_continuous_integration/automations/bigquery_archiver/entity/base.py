@@ -46,6 +46,7 @@ class BigquerySchemaFieldEntity(pydantic.BaseModel):
 
 class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     bigquery_metadata: BigqueryBaseMetadata
+    metadata_version: str = "v1"
     gcs_prefix: str
     archived_datetime: datetime.datetime
     is_archived: bool = False
