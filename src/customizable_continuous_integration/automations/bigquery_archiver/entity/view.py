@@ -21,6 +21,7 @@ from customizable_continuous_integration.automations.bigquery_archiver.entity.bi
 
 class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryViewMetadata
+    defining_query: str = ""
     schema_fields: list[BigquerySchemaFieldEntity] = []
 
     @property
@@ -37,7 +38,7 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         table = bigquery_client.get_table(self.fully_qualified_identity)
         self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in table.schema]
         self.bigquery_metadata.description = table.description
-        self.bigquery_metadata.defining_query = table.view_query
+        self.defining_query = table.view_query
 
     def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         self.is_archived = True
@@ -49,7 +50,7 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         with fsspec.open(self.metadata_serialized_path, "r") as f:
             loaded_model = self.model_validate(json.load(f))
             for k in loaded_model.model_fields:
-                if k in BigqueryArchivedDatasetEntity.model_fields:
+                if k in BigqueryViewMetadata.model_fields:
                     setattr(self, k, getattr(loaded_model, k))
 
     def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
@@ -63,7 +64,7 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
         view = google.cloud.bigquery.Table(fully_qualified_identity)
-        view.view_query = self.bigquery_metadata.defining_query
+        view.view_query = self.defining_query
         view = bigquery_client.create_table(view, exists_ok=True)
         view.description = self.bigquery_metadata.description
         view.labels = self.bigquery_metadata.labels
@@ -72,11 +73,13 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         return table
 
 
-class BigqueryArchiveMaterializedViewEntity(BigqueryArchiveViewEntity):
+class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
+    bigquery_metadata: BigqueryViewMetadata
     enable_refresh: bool = False
     refresh_interval_seconds: int = 1800
     mview_query: str = ""
     partition_config: BigqueryPartitionConfig | None = None
+    schema_fields: list[BigquerySchemaFieldEntity] = []
 
     @property
     def entity_type(self) -> str:
@@ -84,13 +87,14 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryArchiveViewEntity):
 
     @property
     def metadata_serialized_path(self):
-        return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/view.json"
+        return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/materialized_view.json"
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:
             bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
-        super().fetch_self(bigquery_client)
         table = bigquery_client.get_table(self.fully_qualified_identity)
+        self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in table.schema]
+        self.bigquery_metadata.description = table.description
         self.enable_refresh = table.mview_enable_refresh
         self.refresh_interval_seconds = table.mview_refresh_interval.seconds
         self.mview_query = table.mview_query

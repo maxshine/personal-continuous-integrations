@@ -59,7 +59,7 @@ class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
     imported_libraries: list[str] = []
     arguments: list[dict] = []
     language: str = "SQL"
-    return_type: str = None
+    return_type: str = ""
 
     @property
     def entity_type(self) -> str:

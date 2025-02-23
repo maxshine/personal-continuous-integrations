@@ -82,27 +82,24 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                 partition_require_filter=bigquery_item.time_partitioning.require_partition_filter or False,
             )
         d = base_metadata.model_dump()
-        d["partition_config"] = partition_config
         extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveTableEntity.model_fields}
-        extra_fields.update({"bigquery_metadata": BigqueryTableMetadata.from_dict(d)})
+        extra_fields.update({"bigquery_metadata": BigqueryTableMetadata.from_dict(d), "partition_config": partition_config})
         return BigqueryArchiveTableEntity(**extra_fields)
 
     def generate_bigquery_archived_view(
         self, bigquery_item: google.cloud.bigquery.table.TableListItem, base_metadata: BigqueryBaseMetadata, defining_query: str, **kwargs
     ) -> BigqueryArchiveViewEntity:
         d = base_metadata.model_dump()
-        d["defining_query"] = defining_query
         extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveViewEntity.model_fields}
-        extra_fields.update({"bigquery_metadata": BigqueryViewMetadata.from_dict(d)})
+        extra_fields.update({"bigquery_metadata": BigqueryViewMetadata.from_dict(d), "defining_query": defining_query})
         return BigqueryArchiveViewEntity(**extra_fields)
 
     def generate_bigquery_archived_materialized_view(
         self, bigquery_item: google.cloud.bigquery.table.TableListItem, base_metadata: BigqueryBaseMetadata, defining_query: str, **kwargs
-    ) -> BigqueryArchiveViewEntity:
+    ) -> BigqueryArchiveMaterializedViewEntity:
         d = base_metadata.model_dump()
-        d["defining_query"] = defining_query
         extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveViewEntity.model_fields}
-        extra_fields.update({"bigquery_metadata": BigqueryViewMetadata.from_dict(d)})
+        extra_fields.update({"bigquery_metadata": BigqueryViewMetadata.from_dict(d), "mview_query": defining_query})
         return BigqueryArchiveMaterializedViewEntity(**extra_fields)
 
     def generate_bigquery_archived_function(
@@ -210,6 +207,15 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             t.destination_gcp_project_id = self.destination_gcp_project_id
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
         for t in self.views:
+            t.destination_gcp_project_id = self.destination_gcp_project_id
+            t.destination_bigquery_dataset = self.destination_bigquery_dataset
+        for t in self.materialized_views:
+            t.destination_gcp_project_id = self.destination_gcp_project_id
+            t.destination_bigquery_dataset = self.destination_bigquery_dataset
+        for t in self.user_define_functions:
+            t.destination_gcp_project_id = self.destination_gcp_project_id
+            t.destination_bigquery_dataset = self.destination_bigquery_dataset
+        for t in self.stored_procedures:
             t.destination_gcp_project_id = self.destination_gcp_project_id
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
         return None

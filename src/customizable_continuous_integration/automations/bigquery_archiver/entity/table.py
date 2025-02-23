@@ -13,11 +13,10 @@ import typing
 
 import fsspec
 import google.cloud.bigquery.table
-import pydantic
 from typing_extensions import Self
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.base import BigqueryBaseArchiveEntity, BigquerySchemaFieldEntity
-from customizable_continuous_integration.automations.bigquery_archiver.entity.bigquery_metadata import BigqueryTableMetadata
+from customizable_continuous_integration.automations.bigquery_archiver.entity.bigquery_metadata import BigqueryPartitionConfig, BigqueryTableMetadata
 
 
 class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
@@ -25,6 +24,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
     schema_fields: list[BigquerySchemaFieldEntity] = []
     data_archive_format: str = google.cloud.bigquery.job.DestinationFormat.AVRO
     data_compression: str = google.cloud.bigquery.job.Compression.SNAPPY
+    partition_config: BigqueryPartitionConfig | None = None
 
     @property
     def entity_type(self) -> str:
@@ -68,7 +68,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         with fsspec.open(self.metadata_serialized_path, "r") as f:
             loaded_model = self.model_validate(json.load(f))
             for k in loaded_model.model_fields:
-                if k in BigqueryArchivedDatasetEntity.model_fields:
+                if k in BigqueryArchiveTableEntity.model_fields:
                     setattr(self, k, getattr(loaded_model, k))
 
     def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
@@ -89,9 +89,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
                 source_format=self.data_archive_format,
                 schema=[f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None,
                 destination_table_description=self.bigquery_metadata.description,
-                time_partitioning=(
-                    self.bigquery_metadata.partition_config.to_bigquery_time_partitioning() if self.bigquery_metadata.partition_config else None
-                ),
+                time_partitioning=(self.partition_config.to_bigquery_time_partitioning() if self.partition_config else None),
                 use_avro_logical_types=True,
             ),
         )

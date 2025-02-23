@@ -82,15 +82,15 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
                 try:
                     ret = completed_task.result()
                     if ret:
-                        self.logger.info(f"{completed_task_req.entity_type} {completed_task_req.identity} Archive Result: {ret}")
+                        self.logger.info(f"{completed_task_req.entity_type} {completed_task_req.identity} Restore Result: {ret}")
                     elif continue_on_failure:
                         self.logger.error(
-                            f"{completed_task_req.entity_type} {completed_task_req.identity} Archive FAILED: {ret}, execution will be continued"
+                            f"{completed_task_req.entity_type} {completed_task_req.identity} Restore FAILED: {ret}, execution will be continued"
                         )
                         failed_tasks_results[completed_task_req.identity] = ret
                     else:
                         self.logger.error(
-                            f"{completed_task_req.entity_type} {completed_task_req.identity} Archive FAILED: {ret}, execution will be stopped"
+                            f"{completed_task_req.entity_type} {completed_task_req.identity} Restore FAILED: {ret}, execution will be stopped"
                         )
                         executor.shutdown(wait=False, cancel_futures=True)
                         exit(1)
@@ -101,6 +101,6 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
                     executor.shutdown(wait=False, cancel_futures=True)
                     exit(1)
         if failed_tasks_results:
-            self.logger.error(f"These archive processes FAILED: {list(failed_tasks_results.keys())}")
+            self.logger.error(f"These restoring processes FAILED: {list(failed_tasks_results.keys())}")
             exit(1)
         return self.bigquery_archived_dataset_entity
