@@ -8,8 +8,6 @@ Revision History:
   23/02/2025   Ryan, Gao       Initial creation
 """
 
-import datetime
-import json
 import typing
 
 import fsspec
@@ -26,6 +24,8 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
     arguments: list[dict] = []
     language: str = "SQL"
     return_type: str = None
+    refresh_interval_seconds: int = 1800
+    enable_refresh: bool = False
 
     @property
     def entity_type(self) -> str:
@@ -51,6 +51,28 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
         self.actual_archive_metadata_path = self.metadata_serialized_path
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_routine(fully_qualified_identity, not_found_ok=True)
+        stmt = f"""CREATE FUNCTION `{fully_qualified_identity}`({", ".join([f"{arg['name']} {arg['data_type']}" for arg in self.arguments])})
+                   RETURNS {self.return_type}
+                   {"LANGUAGE "+self.language if self.language != "SQL" else ""}
+                   AS ({self.body})
+                """
+        job = bigquery_client.query(stmt)
+        job.result()
+        routine = bigquery_client.get_routine(fully_qualified_identity)
+        # routine.description = self.bigquery_metadata.description
+        # table = bigquery_client.update_routine(routine, ["description"])
+        return routine
 
 
 class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
@@ -84,3 +106,23 @@ class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
         self.actual_archive_metadata_path = self.metadata_serialized_path
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_routine(fully_qualified_identity, not_found_ok=True)
+        stmt = f"""CREATE PROCEDURE `{fully_qualified_identity}`({", ".join([f"{arg['name']} {arg['data_type']}" for arg in self.arguments])})
+                   {self.body}
+                """
+        job = bigquery_client.query(stmt)
+        job.result()
+        routine = bigquery_client.get_routine(fully_qualified_identity)
+        # routine.description = self.bigquery_metadata.description
+        # table = bigquery_client.update_routine(routine, ["description"])
+        return routine

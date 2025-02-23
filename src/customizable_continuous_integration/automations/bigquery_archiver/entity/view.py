@@ -111,3 +111,25 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
         self.actual_archive_metadata_path = self.metadata_serialized_path
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
+
+    def restore_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, restore_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        if not restore_config:
+            restore_config = {}
+        fully_qualified_identity = self.fully_qualified_identity
+        if self.destination_gcp_project_id and self.destination_bigquery_dataset:
+            fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("overwrite_existing", False):
+            bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
+        stmt = f"""CREATE MATERIALIZED VIEW {fully_qualified_identity}
+            OPTIONS (enable_refresh = {self.enable_refresh}, refresh_interval_minutes = {self.refresh_interval_seconds // 60}) 
+            AS ({self.mview_query})"""
+        job = bigquery_client.query(stmt)
+        job.result()
+        view = bigquery_client.get_table(fully_qualified_identity)
+        view.description = self.bigquery_metadata.description
+        view.labels = self.bigquery_metadata.labels
+        view.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
+        table = bigquery_client.update_table(view, ["description", "schema", "labels"])
+        return table
