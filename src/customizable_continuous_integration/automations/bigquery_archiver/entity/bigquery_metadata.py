@@ -32,7 +32,7 @@ class BigqueryBaseMetadata(pydantic.BaseModel):
     project_id: str
     dataset: str
     identity: str
-    description: str = ""
+    description: str | None = ""
     labels: dict[str, str] = {}
     tags: dict[str, str] = {}
 
@@ -46,8 +46,6 @@ class BigqueryDatasetMetadata(BigqueryBaseMetadata): ...
 
 
 class BigqueryTableMetadata(BigqueryBaseMetadata):
-    partition_config: BigqueryPartitionConfig | None = None
-
     @classmethod
     def from_dict(cls, metadata_dict: dict) -> Self:
         d = {k: v for k, v in metadata_dict.items() if k in BigqueryTableMetadata.model_fields}
@@ -55,8 +53,6 @@ class BigqueryTableMetadata(BigqueryBaseMetadata):
 
 
 class BigqueryViewMetadata(BigqueryBaseMetadata):
-    defining_query: str
-
     @classmethod
     def from_dict(cls, metadata_dict: dict) -> Self:
         d = {k: v for k, v in metadata_dict.items() if k in BigqueryViewMetadata.model_fields}

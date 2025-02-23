@@ -7,11 +7,16 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 import google.cloud.bigquery
 
-from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import (
-    BigqueryArchivedDatasetEntity,
-    BigqueryArchiveTableEntity,
+from customizable_continuous_integration.automations.bigquery_archiver.entity.base import BigqueryBaseArchiveEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.dataset import BigqueryArchivedDatasetEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.routine import (
+    BigqueryArchiveFunctionEntity,
+    BigqueryArchiveStoredProcedureEntity,
+)
+from customizable_continuous_integration.automations.bigquery_archiver.entity.table import BigqueryArchiveTableEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.view import (
+    BigqueryArchiveMaterializedViewEntity,
     BigqueryArchiveViewEntity,
-    BigqueryBaseArchiveEntity,
 )
 from customizable_continuous_integration.automations.bigquery_archiver.executor.fetch import BaseExecutor
 
@@ -34,7 +39,14 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
         self.bigquery_client = bigquery_client
 
     def archive_single_entity(self, entity: BigqueryBaseArchiveEntity) -> typing.Any:
-        if type(entity) is BigqueryArchiveTableEntity or type(entity) is BigqueryArchiveViewEntity:
+        supported_archive_entity_types = (
+            BigqueryArchiveTableEntity,
+            BigqueryArchiveViewEntity,
+            BigqueryArchiveFunctionEntity,
+            BigqueryArchiveStoredProcedureEntity,
+            BigqueryArchiveMaterializedViewEntity,
+        )
+        if type(entity) in supported_archive_entity_types:
             entity.archive_self(self.bigquery_client)
             return True
         self.logger.warning(f"{entity.identity} is not supported type {type(entity)}")
@@ -52,6 +64,15 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
                 task_req = table_entity
                 task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
             for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.views):
+                task_req = view_entity
+                task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
+            for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.materialized_views):
+                task_req = view_entity
+                task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
+            for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.user_define_functions):
+                task_req = view_entity
+                task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
+            for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.stored_procedures):
                 task_req = view_entity
                 task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
             for completed_task in as_completed(task_requests.keys()):
