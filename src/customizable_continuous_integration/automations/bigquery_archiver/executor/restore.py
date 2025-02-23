@@ -9,6 +9,9 @@ import google.cloud.bigquery
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import (
     BigqueryArchivedDatasetEntity,
+    BigqueryArchiveFunctionEntity,
+    BigqueryArchiveMaterializedViewEntity,
+    BigqueryArchiveStoredProcedureEntity,
     BigqueryArchiveTableEntity,
     BigqueryArchiveViewEntity,
     BigqueryBaseArchiveEntity,
@@ -42,7 +45,14 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         return False
 
     def restore_single_entity(self, entity: BigqueryBaseArchiveEntity, restore_config: dict = None) -> typing.Any:
-        if type(entity) is BigqueryArchiveTableEntity or type(entity) is BigqueryArchiveViewEntity:
+        supported_archive_entity_types = (
+            BigqueryArchiveTableEntity,
+            BigqueryArchiveViewEntity,
+            BigqueryArchiveFunctionEntity,
+            BigqueryArchiveStoredProcedureEntity,
+            BigqueryArchiveMaterializedViewEntity,
+        )
+        if type(entity) in supported_archive_entity_types:
             entity.restore_self(self.bigquery_client, restore_config)
             return True
         self.logger.warning(f"restore {entity.identity} is not supported type {type(entity)}")

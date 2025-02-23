@@ -59,6 +59,8 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     is_archived: bool = False
     actual_archive_metadata_path: str = ""
     actual_archive_data_path: str = ""
+    destination_gcp_project_id: str | None = None
+    destination_bigquery_dataset: str | None = None
 
     @property
     def entity_type(self) -> str:
@@ -111,8 +113,6 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
 class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryTableMetadata
     schema_fields: list[BigquerySchemaFieldEntity] = []
-    destination_gcp_project_id: str | None = None
-    destination_bigquery_dataset: str | None = None
     data_archive_format: str = google.cloud.bigquery.job.DestinationFormat.AVRO
     data_compression: str = google.cloud.bigquery.job.Compression.SNAPPY
 
@@ -195,8 +195,6 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
 class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryViewMetadata
     schema_fields: list[BigquerySchemaFieldEntity] = []
-    destination_gcp_project_id: str | None = None
-    destination_bigquery_dataset: str | None = None
 
     @property
     def entity_type(self) -> str:
@@ -247,12 +245,117 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         return table
 
 
+class BigqueryArchiveMaterializedViewEntity(BigqueryArchiveViewEntity):
+    enable_refresh: bool = False
+    refresh_interval_seconds: int = 1800
+    mview_query: str = ""
+    partition_config: BigqueryPartitionConfig | None = None
+
+    @property
+    def entity_type(self) -> str:
+        return "materialized_view"
+
+    @property
+    def metadata_serialized_path(self):
+        return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/view.json"
+
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        super().fetch_self(bigquery_client)
+        table = bigquery_client.get_table(self.fully_qualified_identity)
+        self.enable_refresh = table.mview_enable_refresh
+        self.refresh_interval_seconds = table.mview_refresh_interval.seconds
+        self.mview_query = table.mview_query
+        if table.time_partitioning:
+            self.partition_config = BigqueryPartitionConfig(
+                partition_type=table.time_partitioning.type_,
+                partition_field=table.time_partitioning.field,
+                partition_expiration_ms=table.time_partitioning.expiration_ms or 0,
+                partition_require_filter=table.time_partitioning.require_partition_filter or False,
+            )
+
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
+        self.is_archived = True
+        self.actual_archive_metadata_path = self.metadata_serialized_path
+        with fsspec.open(self.metadata_serialized_path, "w") as f:
+            f.write(self.model_dump_json(indent=2))
+
+
+class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
+    bigquery_metadata: BigqueryBaseMetadata
+    body: str = ""
+    imported_libraries: list[str] = []
+    arguments: list[dict] = []
+    language: str = "SQL"
+    return_type: str = None
+
+    @property
+    def entity_type(self) -> str:
+        return "user_defined_function"
+
+    @property
+    def metadata_serialized_path(self):
+        return f"{self.gcs_prefix}/function={self.identity}/archive_ts={self.archived_datetime_str}/function.json"
+
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        routine = bigquery_client.get_routine(self.fully_qualified_identity)
+        self.body = routine.body
+        self.imported_libraries = routine.imported_libraries
+        self.arguments = [{"name": arg.name, "data_type": arg.data_type.type_kind.value} for arg in routine.arguments]
+        self.return_type = routine.return_type.type_kind.value
+        self.language = routine.language
+        self.bigquery_metadata.description = routine.description
+
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
+        self.is_archived = True
+        self.actual_archive_metadata_path = self.metadata_serialized_path
+        with fsspec.open(self.metadata_serialized_path, "w") as f:
+            f.write(self.model_dump_json(indent=2))
+
+
+class BigqueryArchiveStoredProcedureEntity(BigqueryArchiveViewEntity):
+    bigquery_metadata: BigqueryBaseMetadata
+    body: str = ""
+    imported_libraries: list[str] = []
+    arguments: list[dict] = []
+    language: str = "SQL"
+    return_type: str = None
+
+    @property
+    def entity_type(self) -> str:
+        return "stored_procedure"
+
+    @property
+    def metadata_serialized_path(self):
+        return f"{self.gcs_prefix}/stored_procedure={self.identity}/archive_ts={self.archived_datetime_str}/stored_procedure.json"
+
+    def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        routine = bigquery_client.get_routine(self.fully_qualified_identity)
+        self.body = routine.body
+        self.imported_libraries = routine.imported_libraries
+        self.arguments = [{"name": arg.name, "data_type": arg.data_type.type_kind.value} for arg in routine.arguments]
+        self.language = routine.language
+        self.bigquery_metadata.description = routine.description
+
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
+        self.is_archived = True
+        self.actual_archive_metadata_path = self.metadata_serialized_path
+        with fsspec.open(self.metadata_serialized_path, "w") as f:
+            f.write(self.model_dump_json(indent=2))
+
+
 class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryDatasetMetadata
     tables: list[BigqueryArchiveTableEntity] = []
     views: list[BigqueryArchiveViewEntity] = []
-    destination_gcp_project_id: str | None = None
-    destination_bigquery_dataset: str | None = None
+    materialized_views: list[BigqueryArchiveMaterializedViewEntity] = []
+    user_define_functions: list[BigqueryArchiveFunctionEntity] = []
+    stored_procedures: list[BigqueryArchiveStoredProcedureEntity] = []
 
     @property
     def fully_qualified_identity(self) -> str:
@@ -307,38 +410,112 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         extra_fields.update({"bigquery_metadata": BigqueryViewMetadata.from_dict(d)})
         return BigqueryArchiveViewEntity(**extra_fields)
 
-    def generate_bigquery_archived_entity_from_table_item(
-        self, bigquery_item: google.cloud.bigquery.table.TableListItem
-    ) -> BigqueryArchiveTableEntity | BigqueryArchiveViewEntity | None:
-        metadata_obj = BigqueryBaseMetadata.from_dict(self.bigquery_metadata.model_dump())
-        metadata_obj.identity = bigquery_item.table_id
-        metadata_obj.labels = bigquery_item.labels
+    def generate_bigquery_archived_materialized_view(
+        self, bigquery_item: google.cloud.bigquery.table.TableListItem, base_metadata: BigqueryBaseMetadata, defining_query: str, **kwargs
+    ) -> BigqueryArchiveViewEntity:
+        d = base_metadata.model_dump()
+        d["defining_query"] = defining_query
+        extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveViewEntity.model_fields}
+        extra_fields.update({"bigquery_metadata": BigqueryViewMetadata.from_dict(d)})
+        return BigqueryArchiveMaterializedViewEntity(**extra_fields)
 
-        if bigquery_item.table_type == "TABLE":
-            return self.generate_bigquery_archived_table(
-                bigquery_item,
-                metadata_obj,
-                archived_datetime=self.archived_datetime,
-                gcs_prefix=self.generate_sub_serialization_prefix("table"),
-                destination_gcp_project_id=self.destination_gcp_project_id,
-                destination_bigquery_dataset=self.destination_bigquery_dataset,
-            )
-        elif bigquery_item.table_type == "VIEW":
-            return self.generate_bigquery_archived_view(
-                bigquery_item,
-                metadata_obj,
-                defining_query="Not populated yet",
-                archived_datetime=self.archived_datetime,
-                gcs_prefix=self.generate_sub_serialization_prefix("view"),
-                destination_gcp_project_id=self.destination_gcp_project_id,
-                destination_bigquery_dataset=self.destination_bigquery_dataset,
-            )
+    def generate_bigquery_archived_function(
+        self, bigquery_item: google.cloud.bigquery.routine.Routine, base_metadata: BigqueryBaseMetadata, **kwargs
+    ) -> BigqueryArchiveFunctionEntity:
+        d = base_metadata.model_dump()
+        extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveFunctionEntity.model_fields}
+        extra_fields.update({"bigquery_metadata": BigqueryBaseMetadata.from_dict(d)})
+        return BigqueryArchiveFunctionEntity(**extra_fields)
+
+    def generate_bigquery_archived_stored_procedure(
+        self, bigquery_item: google.cloud.bigquery.table.TableListItem, base_metadata: BigqueryBaseMetadata, **kwargs
+    ) -> BigqueryArchiveViewEntity:
+        d = base_metadata.model_dump()
+        extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveFunctionEntity.model_fields}
+        extra_fields.update({"bigquery_metadata": BigqueryBaseMetadata.from_dict(d)})
+        return BigqueryArchiveStoredProcedureEntity(**extra_fields)
+
+    def generate_bigquery_archived_entity_from_table_item(
+        self, bigquery_item: google.cloud.bigquery.table.TableListItem | google.cloud.bigquery.routine.Routine
+    ) -> (
+        BigqueryArchiveTableEntity
+        | BigqueryArchiveViewEntity
+        | BigqueryArchiveFunctionEntity
+        | BigqueryArchiveMaterializedViewEntity
+        | BigqueryArchiveStoredProcedureEntity
+        | None
+    ):
+        metadata_obj = BigqueryBaseMetadata.from_dict(self.bigquery_metadata.model_dump())
+        metadata_obj.identity = bigquery_item.table_id if hasattr(bigquery_item, "table_id") else bigquery_item.routine_id
+        metadata_obj.labels = bigquery_item.labels if hasattr(bigquery_item, "table_id") else {}
+        if type(bigquery_item) is google.cloud.bigquery.routine.Routine:
+            if bigquery_item.type_ == "SCALAR_FUNCTION":
+                return self.generate_bigquery_archived_function(
+                    bigquery_item,
+                    metadata_obj,
+                    archived_datetime=self.archived_datetime,
+                    gcs_prefix=self.generate_sub_serialization_prefix("function"),
+                    destination_gcp_project_id=self.destination_gcp_project_id,
+                    destination_bigquery_dataset=self.destination_bigquery_dataset,
+                )
+            elif bigquery_item.type_ == "PROCEDURE":
+                return self.generate_bigquery_archived_stored_procedure(
+                    bigquery_item,
+                    metadata_obj,
+                    archived_datetime=self.archived_datetime,
+                    gcs_prefix=self.generate_sub_serialization_prefix("stored_procedure"),
+                    destination_gcp_project_id=self.destination_gcp_project_id,
+                    destination_bigquery_dataset=self.destination_bigquery_dataset,
+                )
+        else:
+            if bigquery_item.table_type == "TABLE":
+                return self.generate_bigquery_archived_table(
+                    bigquery_item,
+                    metadata_obj,
+                    archived_datetime=self.archived_datetime,
+                    gcs_prefix=self.generate_sub_serialization_prefix("table"),
+                    destination_gcp_project_id=self.destination_gcp_project_id,
+                    destination_bigquery_dataset=self.destination_bigquery_dataset,
+                )
+            elif bigquery_item.table_type == "VIEW":
+                return self.generate_bigquery_archived_view(
+                    bigquery_item,
+                    metadata_obj,
+                    defining_query="Not populated yet",
+                    archived_datetime=self.archived_datetime,
+                    gcs_prefix=self.generate_sub_serialization_prefix("view"),
+                    destination_gcp_project_id=self.destination_gcp_project_id,
+                    destination_bigquery_dataset=self.destination_bigquery_dataset,
+                )
+            elif bigquery_item.table_type == "MATERIALIZED_VIEW":
+                return self.generate_bigquery_archived_materialized_view(
+                    bigquery_item,
+                    metadata_obj,
+                    defining_query="Not populated yet",
+                    archived_datetime=self.archived_datetime,
+                    gcs_prefix=self.generate_sub_serialization_prefix("materialized_view"),
+                    destination_gcp_project_id=self.destination_gcp_project_id,
+                    destination_bigquery_dataset=self.destination_bigquery_dataset,
+                )
+            elif bigquery_item.table_type == "STORED_PROCEDURE":
+                return self.generate_bigquery_archived_stored_procedure(
+                    bigquery_item,
+                    metadata_obj,
+                    defining_query="Not populated yet",
+                    archived_datetime=self.archived_datetime,
+                    gcs_prefix=self.generate_sub_serialization_prefix("stored_procedure"),
+                    destination_gcp_project_id=self.destination_gcp_project_id,
+                    destination_bigquery_dataset=self.destination_bigquery_dataset,
+                )
         return None
 
     def generate_sub_serialization_prefix(self, sub_type: str) -> str:
         sub_types_map = {
             "table": "tables",
             "view": "views",
+            "materialized_view": "materialized_views",
+            "function": "functions",
+            "stored_procedure": "stored_procedures",
         }
         return f"{self.archive_prefix}/{sub_types_map.get(sub_type, 'entities')}"
 

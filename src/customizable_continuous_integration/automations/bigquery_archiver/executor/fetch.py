@@ -6,6 +6,9 @@ import google.cloud.bigquery
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import (
     BigqueryArchivedDatasetEntity,
+    BigqueryArchiveFunctionEntity,
+    BigqueryArchiveMaterializedViewEntity,
+    BigqueryArchiveStoredProcedureEntity,
     BigqueryArchiveTableEntity,
     BigqueryArchiveViewEntity,
 )
@@ -45,6 +48,22 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
             elif type(entity) is BigqueryArchiveViewEntity:
                 entity.fetch_self(self.bigquery_client)
                 self.bigquery_archived_dataset_entity.views.append(entity)
+            elif type(entity) is BigqueryArchiveMaterializedViewEntity:
+                entity.fetch_self(self.bigquery_client)
+                self.bigquery_archived_dataset_entity.materialized_views.append(entity)
+            else:
+                self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
+        for e in self.bigquery_client.list_routines(dataset=ds):
+            self.logger.info(f"Routine: {e.routine_id}")
+            entity = self.bigquery_archived_dataset_entity.generate_bigquery_archived_entity_from_table_item(e)
+            if not entity:
+                self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
+            if type(entity) is BigqueryArchiveFunctionEntity:
+                entity.fetch_self(self.bigquery_client)
+                self.bigquery_archived_dataset_entity.user_define_functions.append(entity)
+            elif type(entity) is BigqueryArchiveStoredProcedureEntity:
+                entity.fetch_self(self.bigquery_client)
+                self.bigquery_archived_dataset_entity.stored_procedures.append(entity)
             else:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
         return self.bigquery_archived_dataset_entity
