@@ -7,14 +7,16 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 import google.cloud.bigquery
 
-from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import (
-    BigqueryArchivedDatasetEntity,
+from customizable_continuous_integration.automations.bigquery_archiver.entity.base import BigqueryBaseArchiveEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.dataset import BigqueryArchivedDatasetEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.routine import (
     BigqueryArchiveFunctionEntity,
-    BigqueryArchiveMaterializedViewEntity,
     BigqueryArchiveStoredProcedureEntity,
-    BigqueryArchiveTableEntity,
+)
+from customizable_continuous_integration.automations.bigquery_archiver.entity.table import BigqueryArchiveTableEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.view import (
+    BigqueryArchiveMaterializedViewEntity,
     BigqueryArchiveViewEntity,
-    BigqueryBaseArchiveEntity,
 )
 from customizable_continuous_integration.automations.bigquery_archiver.executor.fetch import BaseExecutor
 

@@ -4,12 +4,14 @@ import logging
 
 import google.cloud.bigquery
 
-from customizable_continuous_integration.automations.bigquery_archiver.entity.archive_entities import (
-    BigqueryArchivedDatasetEntity,
+from customizable_continuous_integration.automations.bigquery_archiver.entity.dataset import BigqueryArchivedDatasetEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.routine import (
     BigqueryArchiveFunctionEntity,
-    BigqueryArchiveMaterializedViewEntity,
     BigqueryArchiveStoredProcedureEntity,
-    BigqueryArchiveTableEntity,
+)
+from customizable_continuous_integration.automations.bigquery_archiver.entity.table import BigqueryArchiveTableEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.view import (
+    BigqueryArchiveMaterializedViewEntity,
     BigqueryArchiveViewEntity,
 )
 
