@@ -208,6 +208,23 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         }
         return f"{self.archive_prefix}/{sub_types_map.get(sub_type, 'entities')}"
 
+    def modify_sub_entity_queries(self, **kwargs):
+        if (self.destination_gcp_project_id and self.destination_gcp_project_id != self.project_id) or (
+            self.destination_bigquery_dataset and self.destination_bigquery_dataset != self.dataset
+        ):
+            replacement_mapping = {}
+            replacement_mapping[f"{self.project_id}.{self.dataset}."] = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}."
+            replacement_mapping[f"{self.dataset}."] = f"{self.destination_bigquery_dataset}."
+            modify_config = {"replacement_mapping": replacement_mapping}
+            for t in self.views:
+                t.modify_self_query(modify_config)
+            for t in self.materialized_views:
+                t.modify_self_query(modify_config)
+            for t in self.user_define_functions:
+                t.modify_self_query(modify_config)
+            for t in self.stored_procedures:
+                t.modify_self_query(modify_config)
+
     def populate_sub_restore_info(self) -> typing.Any:
         for t in self.tables:
             t.destination_gcp_project_id = self.destination_gcp_project_id
@@ -224,6 +241,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         for t in self.stored_procedures:
             t.destination_gcp_project_id = self.destination_gcp_project_id
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
+        self.modify_sub_entity_queries()
         return None
 
     def load_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> Self:

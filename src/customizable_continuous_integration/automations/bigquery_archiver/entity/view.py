@@ -72,6 +72,11 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         table = bigquery_client.update_table(view, ["description", "schema", "labels"])
         return table
 
+    def modify_self_query(self, modify_config: dict) -> typing.Any:
+        replacement_mapping = modify_config.get("replacement_mapping", {})
+        for k, v in replacement_mapping.items():
+            self.defining_query = self.defining_query.replace(k, v)
+
 
 class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryViewMetadata
@@ -133,3 +138,8 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
         view.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
         table = bigquery_client.update_table(view, ["description", "schema", "labels"])
         return table
+
+    def modify_self_query(self, modify_config: dict) -> typing.Any:
+        replacement_mapping = modify_config.get("replacement_mapping", {})
+        for k, v in replacement_mapping.items():
+            self.mview_query = self.mview_query.replace(k, v)
