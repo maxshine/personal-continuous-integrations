@@ -1,0 +1,7 @@
+- name: archive_test
+  concurrency: 1
+  task_type: archive
+  continue_on_failure: true
+  source_gcp_project_id:
+  source_bigquery_dataset:
+  destination_gcs_prefix:

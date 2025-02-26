@@ -74,6 +74,11 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
         # table = bigquery_client.update_routine(routine, ["description"])
         return routine
 
+    def modify_self_query(self, modify_config: dict) -> typing.Any:
+        replacement_mapping = modify_config.get("replacement_mapping", {})
+        for k, v in replacement_mapping.items():
+            self.body = self.body.replace(k, v)
+
 
 class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryBaseMetadata
@@ -126,3 +131,8 @@ class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
         # routine.description = self.bigquery_metadata.description
         # table = bigquery_client.update_routine(routine, ["description"])
         return routine
+
+    def modify_self_query(self, modify_config: dict) -> typing.Any:
+        replacement_mapping = modify_config.get("replacement_mapping", {})
+        for k, v in replacement_mapping.items():
+            self.body = self.body.replace(k, v)

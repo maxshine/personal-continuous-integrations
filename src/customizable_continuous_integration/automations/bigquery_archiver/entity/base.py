@@ -90,6 +90,9 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     def from_dataset_reference(self, dataset_reference: str):
         pass
 
+    def modify_self_query(self, modify_config: dict) -> typing.Any:
+        raise NotImplementedError("Please implement me to modify myself")
+
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client) -> typing.Any:
         raise NotImplementedError("Please implement me to fetch myself")
 
