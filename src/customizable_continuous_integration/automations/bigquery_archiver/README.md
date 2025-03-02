@@ -92,3 +92,6 @@ Following table describes the common fields for both archive and restore task co
    6. arguments
    7. language
    8. return_type
+
+## Limitations
+- The archive / restore leverage the user's GCP credentials to access the Bigquery and GCS resources. The user should have the necessary permissions to access the resources.
