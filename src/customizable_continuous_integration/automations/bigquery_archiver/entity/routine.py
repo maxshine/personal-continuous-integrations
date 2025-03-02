@@ -24,8 +24,6 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
     arguments: list[dict] = []
     language: str = "SQL"
     return_type: str = None
-    refresh_interval_seconds: int = 1800
-    enable_refresh: bool = False
 
     @property
     def entity_type(self) -> str:

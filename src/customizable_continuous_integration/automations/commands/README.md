@@ -1,16 +1,18 @@
 # The python package to host user-interface CLI
 
 ## Available Commands
-| No. | Field              | Starting Version | Description                                               |
-|:----|:-------------------|:-----------------|:----------------------------------------------------------|
-| 1   | `integration-test` | v1.0.0           | Run the integration test suite defined in the config file |
-| 2   | `run-shell`        | v1.0.0           | Run arbitrary Unix command in the Bash shell              |
-| 3   | `write-protection` | v1.0.0           | Check the protected files in a GIT difference             |
+| No. | Field              | Starting Version | Description                                               | Reference                                                                                      |
+|:----|:-------------------|:-----------------|:----------------------------------------------------------|------------------------------------------------------------------------------------------------|
+| 1   | `integration-test` | v1.0.0           | Run the integration test suite defined in the config file | [the README](/src/customizable_continuous_integration/automations/integration/README.md)       |
+| 2   | `run-shell`        | v1.0.0           | Run arbitrary Unix command in the Bash shell              | N/A                                                                                            |
+| 3   | `write-protection` | v1.0.0           | Check the protected files in a GIT difference             | N/A                                                                                            |
+| 4   | `archive-bigquery` | v1.5.0           | Archive a Bigquery dataset into GCS                       | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
+| 5   | `restore-bigquery` | v1.5.0           | Restore a Bigquery dataset from GCS archive               | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
 
 
 ## Commands Release History
 ### integration-test
-Available from **v1.3.0**.   
+Available from **v1.3.0**.
 Deprecated from *N/A*.
 #### Version History
 | No. | Version | Features                                                                                                                         | Bugfixes |
@@ -21,7 +23,7 @@ Deprecated from *N/A*.
 
 
 ### run-shell
-Available from **v1.0.0**.   
+Available from **v1.0.0**.
 Deprecated from *N/A*.
 #### Version History
 | No. | Version | Features                         | Bugfixes |
@@ -29,7 +31,7 @@ Deprecated from *N/A*.
 | 1   | v1.0.0  | - Run an arbitrary shell command | N/A      |
 
 ### write-protection
-Available from **v1.0.0**.   
+Available from **v1.0.0**.
 Deprecated from *N/A*.
 #### Version History
 | No. | Version | Features                                                                             | Bugfixes                                                |
@@ -39,3 +41,11 @@ Deprecated from *N/A*.
 | 3   | v1.2.0  | - Support administrative users config via collaborator roles (admin and above)       | N/A                                                     |
 | 4   | v1.2.1  | N/A                                                                                  | - Use maintainer role instead of admin                  |
 | 5   | v1.3.1  | N/A                                                                                  | - Use maintainer role instead of admin (based on 1.3.0) |
+
+### archive-bigquery & restore-bigquery
+Available from **v1.5.0**.
+Deprecated from *N/A*.
+#### Version History
+| No. | Version | Features                                                                         | Bugfixes                                                |
+|:----|:--------|:---------------------------------------------------------------------------------|:--------------------------------------------------------|
+| 1   | v1.5.0  | - Initial function archiving Bigquery dataset into GCS and restoring it from GCS | N/A                                                     |
