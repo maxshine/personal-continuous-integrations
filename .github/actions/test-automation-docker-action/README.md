@@ -37,7 +37,7 @@ N/A
 ### Availability
 Available from **v1.3.0**.   
 Deprecated from *N/A*  
-Please refer to the [Changelog](CHANGELOG.md) for details
+Please refer to the [Changelog](CHANGELOG.md) for details, especially the available DBT runtime and adapters in this action.
 
 ### License
 
