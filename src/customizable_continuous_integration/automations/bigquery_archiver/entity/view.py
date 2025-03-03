@@ -17,6 +17,7 @@ from typing_extensions import Self
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.base import BigqueryBaseArchiveEntity, BigquerySchemaFieldEntity
 from customizable_continuous_integration.automations.bigquery_archiver.entity.bigquery_metadata import BigqueryPartitionConfig, BigqueryViewMetadata
+from customizable_continuous_integration.common_libs.sql.parsing.extract_dependencies import extract_sql_select_statement_dependencies
 
 
 class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
@@ -31,6 +32,18 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
     @property
     def metadata_serialized_path(self):
         return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/view.json"
+
+    @property
+    def dependencies(self) -> set[str]:
+        ret = set()
+        for e in extract_sql_select_statement_dependencies(self.defining_query, set()):
+            if len(e.split(".")) == 3:
+                ret.add(e)
+            elif len(e.split(".")) == 2:
+                ret.add(f"{self.project_id}.{e}")
+            else:
+                ret.add(f"{self.project_id}.{self.dataset}.{e}")
+        return ret
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:
@@ -93,6 +106,18 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
     @property
     def metadata_serialized_path(self):
         return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/materialized_view.json"
+
+    @property
+    def dependencies(self) -> set[str]:
+        ret = set()
+        for e in extract_sql_select_statement_dependencies(self.mview_query, set()):
+            if len(e.split(".")) == 3:
+                ret.add(e)
+            elif len(e.split(".")) == 2:
+                ret.add(f"{self.project_id}.{e}")
+            else:
+                ret.add(f"{self.project_id}.{self.dataset}.{e}")
+        return ret
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:
