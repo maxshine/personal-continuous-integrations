@@ -86,7 +86,11 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
 
     @property
     def fully_qualified_identity(self) -> str:
-        return f"{self.project_id}.{self.dataset}.{self.identity}"
+        return (
+            f"{self.project_id}.{self.dataset}.{self.identity}"
+            if not self.destination_gcp_project_id
+            else f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        )
 
     @property
     def dependencies(self) -> set[str]:
