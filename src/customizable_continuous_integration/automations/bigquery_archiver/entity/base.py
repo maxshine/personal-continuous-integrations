@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
+  03/03/2025   Ryan, Gao       Add dependencies property
 """
 
 import datetime
@@ -85,7 +86,15 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
 
     @property
     def fully_qualified_identity(self) -> str:
-        return f"{self.project_id}.{self.dataset}.{self.identity}"
+        return (
+            f"{self.project_id}.{self.dataset}.{self.identity}"
+            if not self.destination_gcp_project_id
+            else f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        )
+
+    @property
+    def dependencies(self) -> set[str]:
+        return set()
 
     def from_dataset_reference(self, dataset_reference: str):
         pass

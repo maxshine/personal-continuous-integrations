@@ -3529,6 +3529,23 @@ jinja2-simple-tags = ">=0.3.1"
 sqlfluff = "3.1.1"
 
 [[package]]
+name = "sqlglot"
+version = "26.7.0"
+description = "An easily customizable SQL parser and transpiler"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+markers = "python_version <= \"3.11\""
+files = [
+    {file = "sqlglot-26.7.0-py3-none-any.whl", hash = "sha256:684f86fc1c678b6d778b7683275194451ed52264a32ea12cc84e0daf4f2dc6ce"},
+    {file = "sqlglot-26.7.0.tar.gz", hash = "sha256:4a6f7c6211fa6c76d8c6ce2ba897f7f769f1898b0d7440ad842150201e905c41"},
+]
+
+[package.extras]
+dev = ["duckdb (>=0.6)", "maturin (>=1.4,<2.0)", "mypy", "pandas", "pandas-stubs", "pdoc", "pre-commit", "python-dateutil", "pytz", "ruff (==0.7.2)", "types-python-dateutil", "types-pytz", "typing-extensions"]
+rs = ["sqlglotrs (==0.4.0)"]
+
+[[package]]
 name = "sqlparse"
 version = "0.5.1"
 description = "A non-validating SQL parser."
@@ -3885,4 +3902,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10.0,<3.12"
-content-hash = "85a7e0d4c03d678893a2570358918ce1fc2d7e708f1e3de87db55595b75ec161"
+content-hash = "1d7d57df5a75bef5d2a8908a77b2f98add1829277f69a1fe0d87b58532e3f15c"

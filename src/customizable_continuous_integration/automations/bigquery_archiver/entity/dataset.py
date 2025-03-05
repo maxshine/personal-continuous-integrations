@@ -213,8 +213,8 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             self.destination_bigquery_dataset and self.destination_bigquery_dataset != self.dataset
         ):
             replacement_mapping = {}
-            replacement_mapping[f"{self.project_id}.{self.dataset}."] = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}."
-            replacement_mapping[f"{self.dataset}."] = f"{self.destination_bigquery_dataset}."
+            replacement_mapping[f"{self.project_id}.{self.dataset}"] = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}"
+            replacement_mapping[f"{self.dataset}"] = f"{self.destination_bigquery_dataset}"
             modify_config = {"replacement_mapping": replacement_mapping}
             for t in self.views:
                 t.modify_self_query(modify_config)

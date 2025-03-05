@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
+  05/03/2025   Ryan, Gao       Use sqlparse to handle view query transformation
 """
 
 import json
@@ -13,10 +14,12 @@ import typing
 
 import fsspec
 import google.cloud.bigquery.table
+import sqlglot
 from typing_extensions import Self
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.base import BigqueryBaseArchiveEntity, BigquerySchemaFieldEntity
 from customizable_continuous_integration.automations.bigquery_archiver.entity.bigquery_metadata import BigqueryPartitionConfig, BigqueryViewMetadata
+from customizable_continuous_integration.common_libs.sql.parsing.extract_dependencies import extract_sql_select_statement_dependencies
 
 
 class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
@@ -31,6 +34,18 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
     @property
     def metadata_serialized_path(self):
         return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/view.json"
+
+    @property
+    def dependencies(self) -> set[str]:
+        ret = set()
+        for e in extract_sql_select_statement_dependencies(self.defining_query, set()):
+            if len(e.split(".")) == 3:
+                ret.add(e)
+            elif len(e.split(".")) == 2:
+                ret.add(f"{self.project_id}.{e}")
+            else:
+                ret.add(f"{self.project_id}.{self.dataset}.{e}")
+        return ret
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:
@@ -74,8 +89,22 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
 
     def modify_self_query(self, modify_config: dict) -> typing.Any:
         replacement_mapping = modify_config.get("replacement_mapping", {})
+        parsed_query = sqlglot.parse_one(self.defining_query, dialect="bigquery")
         for k, v in replacement_mapping.items():
-            self.defining_query = self.defining_query.replace(k, v)
+            if len(k.split(".")) == 2:
+                src_catalog, src_db = k.split(".")
+                dst_catalog, dst_db = v.split(".")
+            elif len(k.split(".")) == 1:
+                src_catalog, src_db = (None, k)
+                dst_catalog, dst_db = (None, v)
+            else:
+                continue
+            for te in parsed_query.find_all(sqlglot.exp.Table):
+                search_full_id = f"{src_catalog + '.' if src_catalog else ''}{src_db + '.' if src_db else ''}{te.name}"
+                te_full_id = f"{te.catalog + '.' if te.catalog else ''}{te.db + '.' if te.db else ''}{te.name}"
+                if te_full_id == search_full_id:
+                    te.replace(sqlglot.table(te.name, catalog=dst_catalog, db=dst_db, alias=te.alias))
+        self.defining_query = parsed_query.sql(dialect="bigquery")
 
 
 class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
@@ -93,6 +122,18 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
     @property
     def metadata_serialized_path(self):
         return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/materialized_view.json"
+
+    @property
+    def dependencies(self) -> set[str]:
+        ret = set()
+        for e in extract_sql_select_statement_dependencies(self.mview_query, set()):
+            if len(e.split(".")) == 3:
+                ret.add(e)
+            elif len(e.split(".")) == 2:
+                ret.add(f"{self.project_id}.{e}")
+            else:
+                ret.add(f"{self.project_id}.{self.dataset}.{e}")
+        return ret
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:
@@ -142,4 +183,19 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
     def modify_self_query(self, modify_config: dict) -> typing.Any:
         replacement_mapping = modify_config.get("replacement_mapping", {})
         for k, v in replacement_mapping.items():
-            self.mview_query = self.mview_query.replace(k, v)
+            if len(k.split(".")) == 3:
+                src_catalog, src_db, src_name = k.split(".")
+                dst_catalog, dst_db, dst_name = v.split(".")
+            elif len(k.split(".")) == 2:
+                src_catalog, src_db, src_name = (None, *k.split("."))
+                dst_catalog, dst_db, dst_name = (None, *v.split("."))
+            else:
+                src_catalog, src_db, src_name = (None, None, k)
+                dst_catalog, dst_db, dst_name = (None, None, v)
+            search_full_id = f"{src_catalog + '.' if src_catalog else ''}{src_db + '.' if src_db else ''}{src_name}"
+            parsed_query = sqlglot.parse_one(self.mview_query, dialect="bigquery")
+            for te in parsed_query.find_all(sqlglot.exp.Table):
+                te_full_id = f"{te.catalog + '.' if te.catalog else ''}{te.db + '.' if te.db else ''}{te.name}"
+                if te_full_id == search_full_id:
+                    te.replace(sqlglot.table(dst_name, catalog=dst_catalog, db=dst_db, alias=te.alias))
+            self.mview_query = parsed_query.sql(dialect="bigquery")
