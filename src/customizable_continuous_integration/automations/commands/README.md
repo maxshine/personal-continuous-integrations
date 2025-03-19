@@ -43,7 +43,7 @@ Deprecated from *N/A*.
 | 5   | v1.3.1  | N/A                                                                                  | - Use maintainer role instead of admin (based on 1.3.0) |
 
 ### archive-bigquery & restore-bigquery
-Available from **v1.5.0**.
+Available from **v1.4.0**.
 Deprecated from *N/A*.
 #### Version History
 | No. | Version | Features                                                                         | Bugfixes                                                |
