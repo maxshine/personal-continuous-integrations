@@ -6,8 +6,8 @@
 | 1   | `integration-test` | v1.0.0           | Run the integration test suite defined in the config file | [the README](/src/customizable_continuous_integration/automations/integration/README.md)       |
 | 2   | `run-shell`        | v1.0.0           | Run arbitrary Unix command in the Bash shell              | N/A                                                                                            |
 | 3   | `write-protection` | v1.0.0           | Check the protected files in a GIT difference             | N/A                                                                                            |
-| 4   | `archive-bigquery` | v1.5.0           | Archive a Bigquery dataset into GCS                       | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
-| 5   | `restore-bigquery` | v1.5.0           | Restore a Bigquery dataset from GCS archive               | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
+| 4   | `archive-bigquery` | v1.4.0           | Archive a Bigquery dataset into GCS                       | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
+| 5   | `restore-bigquery` | v1.4.0           | Restore a Bigquery dataset from GCS archive               | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
 
 
 ## Commands Release History
@@ -48,4 +48,4 @@ Deprecated from *N/A*.
 #### Version History
 | No. | Version | Features                                                                         | Bugfixes                                                |
 |:----|:--------|:---------------------------------------------------------------------------------|:--------------------------------------------------------|
-| 1   | v1.5.0  | - Initial function archiving Bigquery dataset into GCS and restoring it from GCS | N/A                                                     |
+| 1   | v1.4.0  | - Initial function archiving Bigquery dataset into GCS and restoring it from GCS | N/A                                                     |
