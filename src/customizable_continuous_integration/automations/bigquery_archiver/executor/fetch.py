@@ -40,7 +40,7 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
         self.bigquery_archived_dataset_entity.fetch_self(self.bigquery_client)
         ds = self.bigquery_client.get_dataset(self.bigquery_archived_dataset_entity.dataset)
         for e in self.bigquery_client.list_tables(dataset=ds):
-            self.logger.info(f"Table: {e.table_id}")
+            self.logger.info(f"Found {e.table_type}: {e.table_id}")
             entity = self.bigquery_archived_dataset_entity.generate_bigquery_archived_entity_from_table_item(e)
             if not entity:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
@@ -56,7 +56,7 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
             else:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
         for e in self.bigquery_client.list_routines(dataset=ds):
-            self.logger.info(f"Routine: {e.routine_id}")
+            self.logger.info(f"Found routine: {e.routine_id}")
             entity = self.bigquery_archived_dataset_entity.generate_bigquery_archived_entity_from_table_item(e)
             if not entity:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
