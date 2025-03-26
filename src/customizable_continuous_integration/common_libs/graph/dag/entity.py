@@ -26,12 +26,12 @@ class DAGNode(object):
             raise ValueError("The internal entity must be an instance of DAGNodeInterface")
         self._internal_entity = internal_entity
         self._internal_lock = threading.Lock()
-        self.dependants: set[str] = set()
+        self.dependents: set[str] = set()
         self.requisites: set[str] = set()
 
     def dag_dependencies(self) -> set[str]:
         with self._internal_lock:
-            return self.dependants
+            return self.dependents
 
     def dag_key(self) -> str:
-        return self._internal_entity.key()
+        return self._internal_entity.dag_key()
