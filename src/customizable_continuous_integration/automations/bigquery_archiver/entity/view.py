@@ -177,7 +177,7 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
         view.description = self.bigquery_metadata.description
         view.labels = self.bigquery_metadata.labels
         view.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
-        table = bigquery_client.update_table(view, ["description", "schema", "labels"])
+        table = bigquery_client.update_table(view, ["description", "labels"])
         return table
 
     def modify_self_query(self, modify_config: dict) -> typing.Any:
