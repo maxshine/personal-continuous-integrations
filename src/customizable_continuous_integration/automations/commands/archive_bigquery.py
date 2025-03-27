@@ -87,7 +87,7 @@ def restore_command(cli_args: list[str]) -> None:
     _logger = get_bigquery_archiver_logger("bigquery_restore")
     args_parser = generate_restore_arguments_parser()
     args = args_parser.parse_args(cli_args)
-    restore_configs = [{"task_type": "archive"}]
+    restore_configs = [{"task_type": "restore"}]
     if args.restore_config_file:
         with fsspec.open(args.restore_config_file) as f:
             restore_configs = yaml.safe_load(f)
