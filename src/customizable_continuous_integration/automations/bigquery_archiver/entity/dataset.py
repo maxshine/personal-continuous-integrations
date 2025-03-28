@@ -57,7 +57,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
 
     @property
     def metadata_serialized_path(self):
-        return f"{self.gcs_prefix}/dataset={self.identity}/archive_ts={self.archived_datetime_str}/dataset.json"
+        return f"{self.archive_prefix}/dataset.json"
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:

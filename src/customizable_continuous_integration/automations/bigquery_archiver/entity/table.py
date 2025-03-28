@@ -32,11 +32,11 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
 
     @property
     def metadata_serialized_path(self):
-        return f"{self.gcs_prefix}/table={self.identity}/archive_ts={self.archived_datetime_str}/table.json"
+        return f"{self.gcs_prefix}/table={self.identity}/table.json"
 
     @property
     def data_serialized_path(self):
-        return f"{self.gcs_prefix}/table={self.identity}/archive_ts={self.archived_datetime_str}/data"
+        return f"{self.gcs_prefix}/table={self.identity}/data"
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:
@@ -87,7 +87,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
             job_id_prefix=f"restore_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
             job_config=google.cloud.bigquery.job.LoadJobConfig(
                 source_format=self.data_archive_format,
-                schema=[f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None,
+                schema=[f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None,
                 destination_table_description=self.bigquery_metadata.description,
                 time_partitioning=(self.partition_config.to_bigquery_time_partitioning() if self.partition_config else None),
                 use_avro_logical_types=True,
