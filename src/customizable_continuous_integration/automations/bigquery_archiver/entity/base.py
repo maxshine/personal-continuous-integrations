@@ -18,7 +18,7 @@ import pydantic
 from typing_extensions import Self
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.bigquery_metadata import BigqueryBaseMetadata
-from customizable_continuous_integration.common_libs.graph.dag.node import DAGNodeInterface
+from customizable_continuous_integration.common_libs.graph.dag.entity import DAGNodeInterface
 
 
 class BigquerySchemaFieldEntity(pydantic.BaseModel):
@@ -99,10 +99,10 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel, DAGNodeInterface):
         return set()
 
     def dag_dependencies(self) -> set[str]:
-        raise self.dependencies
+        return self.dependencies
 
     def dag_key(self) -> str:
-        raise self.fully_qualified_identity
+        return self.fully_qualified_identity
 
     def from_dataset_reference(self, dataset_reference: str):
         pass
