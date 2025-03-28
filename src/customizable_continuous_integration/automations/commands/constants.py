@@ -8,6 +8,7 @@ Revision History:
   03/09/2024   Ryan, Gao       Initial creation
   08/02/2025   Ryan, Gao       Add archive and restore bigquery commands
   06/03/2025   Ryan, Gao       Add help command to show info
+  28/03/2025   Ryan, Gao       Add default help command
 """
 
 import typing
@@ -39,10 +40,8 @@ INTEGRATION_CLI_COMMANDS_REGISTRY: ImmutableDictWrapper[str, CLICommandHandlerTy
 
 
 def retrieve_cli_command(command_name: str) -> CLICommandHandlerType:
-    if command_name == "help":
-        print("Available commands:")
-        print("\n".join(INTEGRATION_CLI_COMMANDS_REGISTRY.keys()))
-        exit(0)
     if command_name in INTEGRATION_CLI_COMMANDS_REGISTRY:
         return INTEGRATION_CLI_COMMANDS_REGISTRY[command_name]
-    return SentinelCommand
+    print("Available commands:")
+    print("\n".join(INTEGRATION_CLI_COMMANDS_REGISTRY.keys()))
+    exit(0)

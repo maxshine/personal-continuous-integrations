@@ -9,6 +9,7 @@ Revision History:
   17/09/2024   Ryan, Gao       Add cross-forks check
   30/09/2024   Ryan, Gao       Add support to use repo admin
   04/10/2024   Ryan, Gao       Add maintainers into the admin list
+  28/03/2025   Ryan, Gao       Add default help argument
 """
 
 import argparse
@@ -40,7 +41,7 @@ _logger = get_integration_test_logger()
 
 
 def generate_arguments_parser() -> argparse.ArgumentParser:
-    args_parser = argparse.ArgumentParser()
+    args_parser = argparse.ArgumentParser(add_help=True)
     args_parser.add_argument("--head-ref", default="", help="head reference in the pull request")
     args_parser.add_argument("--merge-ref", default="", help="merge reference in the pull request")
     args_parser.add_argument("--acting-user", default="", help="github user id initiating this action")
