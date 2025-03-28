@@ -31,7 +31,7 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
 
     @property
     def metadata_serialized_path(self):
-        return f"{self.gcs_prefix}/function={self.identity}/archive_ts={self.archived_datetime_str}/function.json"
+        return f"{self.gcs_prefix}/function={self.identity}/function.json"
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:
@@ -92,7 +92,7 @@ class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
 
     @property
     def metadata_serialized_path(self):
-        return f"{self.gcs_prefix}/stored_procedure={self.identity}/archive_ts={self.archived_datetime_str}/stored_procedure.json"
+        return f"{self.gcs_prefix}/stored_procedure={self.identity}/stored_procedure.json"
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:
         if not bigquery_client:

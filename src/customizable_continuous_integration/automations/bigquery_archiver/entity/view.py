@@ -33,7 +33,7 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
 
     @property
     def metadata_serialized_path(self):
-        return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/view.json"
+        return f"{self.gcs_prefix}/view={self.identity}/view.json"
 
     @property
     def dependencies(self) -> set[str]:
@@ -83,7 +83,7 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         view = bigquery_client.create_table(view, exists_ok=True)
         view.description = self.bigquery_metadata.description
         view.labels = self.bigquery_metadata.labels
-        view.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
+        view.schema = [f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None
         table = bigquery_client.update_table(view, ["description", "schema", "labels"])
         return table
 
@@ -121,7 +121,7 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
 
     @property
     def metadata_serialized_path(self):
-        return f"{self.gcs_prefix}/view={self.identity}/archive_ts={self.archived_datetime_str}/materialized_view.json"
+        return f"{self.gcs_prefix}/view={self.identity}/materialized_view.json"
 
     @property
     def dependencies(self) -> set[str]:
@@ -176,7 +176,7 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
         view = bigquery_client.get_table(fully_qualified_identity)
         view.description = self.bigquery_metadata.description
         view.labels = self.bigquery_metadata.labels
-        view.schema = [f.to_biguqery_schema_field() for f in self.schema_fields] if self.schema_fields else None
+        view.schema = [f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None
         table = bigquery_client.update_table(view, ["description", "labels"])
         return table
 

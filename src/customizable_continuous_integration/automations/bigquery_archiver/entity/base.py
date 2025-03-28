@@ -35,14 +35,14 @@ class BigquerySchemaFieldEntity(pydantic.BaseModel):
         fields_dict = {k: v for k, v in data_dict.items() if k in BigquerySchemaFieldEntity.model_fields}
         return cls(**fields_dict)
 
-    def to_biguqery_schema_field(self) -> google.cloud.bigquery.SchemaField:
+    def to_bigquery_schema_field(self) -> google.cloud.bigquery.SchemaField:
         schema_field = google.cloud.bigquery.SchemaField(
             self.name,
             self.type,
             mode=self.mode,
             description=self.description,
             default_value_expression=self.default_value_expression,
-            fields=[f.to_biguqery_schema_field() for f in self.fields] if self.fields else [],
+            fields=[f.to_bigquery_schema_field() for f in self.fields] if self.fields else [],
         )
         return schema_field
 
