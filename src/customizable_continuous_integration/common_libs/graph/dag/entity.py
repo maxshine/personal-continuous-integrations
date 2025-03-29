@@ -1,4 +1,4 @@
-"""This module defines the node entity and node interface for DAG.
+"""This module defines the entities and node interface for DAG.
 
 Author:
   Ryan,Gao (ryangao-au@outlook.com)
@@ -103,7 +103,7 @@ class DAG(object):
         with self._lock:
             return [node for node in self._nodes.values() if node.is_ready() and node not in self._completed_nodes]
 
-    def mark_nodes_external_requisites(self) -> None:
+    def mark_nodes_external_requisites(self, external_dependencies: set[str]) -> None:
         with self._lock:
             for node in self._nodes.values():
-                node.mark_external_requisites(set(self._nodes.keys()), set())
+                node.mark_external_requisites(set(self._nodes.keys()), external_dependencies)
