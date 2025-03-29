@@ -63,18 +63,19 @@ class DAG(object):
         self._dag_identity = dag_identity
         self._nodes: dict[str, DAGNode] = {}
         self._completed_nodes: dict[str, DAGNode] = dict()
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         for raw_entity in raw_entities:
             node = DAGNode(raw_entity)
             self._nodes[node.dag_key()] = node
         self.normalize_reverse_relationship()
 
     def normalize_reverse_relationship(self) -> None:
-        for node in self._nodes.values():
-            for dependency in node.requisites:
-                if dependency not in self._nodes:
-                    continue
-                self._nodes[dependency].add_dependent(node.dag_key())
+        with self._lock:
+            for node in self._nodes.values():
+                for dependency in node.requisites:
+                    if dependency not in self._nodes:
+                        continue
+                    self._nodes[dependency].add_dependent(node.dag_key())
 
     def add_node(self, raw_node: DAGNodeInterface) -> None:
         with self._lock:
@@ -94,11 +95,11 @@ class DAG(object):
             node = self.get_node(node_key)
             if node:
                 self._completed_nodes[node_key] = node
-            for dependent in node.dependents:
-                if dependent in self._nodes:
-                    self._nodes[dependent].complete_requisite(node_key)
-                    if self._nodes[dependent].is_ready():
-                        ret.append(self._nodes[dependent])
+                for dependent in node.dependents:
+                    if dependent in self._nodes:
+                        self._nodes[dependent].complete_requisite(node_key)
+                        if self._nodes[dependent].is_ready():
+                            ret.append(self._nodes[dependent])
         return ret
 
     def get_ready_nodes(self) -> list[DAGNode]:

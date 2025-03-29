@@ -126,6 +126,44 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         if failed_tasks_results:
             self.logger.error(f"These restoring processes FAILED: {list(failed_tasks_results.keys())}")
             exit(1)
-        views_dag = build_dag("view_restore_dag", self.bigquery_archived_dataset_entity.views + self.bigquery_archived_dataset_entity.materialized_views, set())
 
+        # Do dependency restoring
+        views_dag = build_dag("view_restore_dag", self.bigquery_archived_dataset_entity.views + self.bigquery_archived_dataset_entity.materialized_views, set())
+        task_requests.clear()
+        failed_tasks_results.clear()
+        ready_nodes = views_dag.get_ready_nodes()
+        restoring_nodes = {node.dag_key(): node for node in ready_nodes}
+        with ThreadPoolExecutor(max_workers=concurrency) as executor:
+            for idx, node in enumerate(ready_nodes):
+                task_req = (node.raw_entity(), self.restore_config, node.dag_key())
+                task_requests[executor.submit(self.restore_single_entity, *task_req[0:2])] = task_req
+            while restoring_nodes:
+                ready_nodes.clear()
+                for completed_task in as_completed(task_requests.keys()):
+                    completed_task_req = task_requests[completed_task]
+                    del task_requests[completed_task]
+                    del restoring_nodes[completed_task_req[2]]
+                    try:
+                        ret = completed_task.result()
+                        if ret:
+                            self.logger.info(f"{completed_task_req[0].entity_type} {completed_task_req[0].identity} Restore Result: {ret}")
+                            ready_nodes.extend(views_dag.complete_node(completed_task_req[2]))
+                        else:
+                            self.logger.error(
+                                f"{completed_task_req[0].entity_type} {completed_task_req[0].identity} Restore FAILED: {ret}, execution will be stopped"
+                            )
+                            executor.shutdown(wait=False, cancel_futures=True)
+                            exit(1)
+                    except Exception as e:
+                        self.logger.error(
+                            f"{completed_task_req[0].entity_type} {completed_task_req[0].identity} FAILED with exception: {e}, execution will be stopped"
+                        )
+                        executor.shutdown(wait=False, cancel_futures=True)
+                        exit(1)
+                for idx, node in enumerate(ready_nodes):
+                    if node.dag_key() in restoring_nodes:
+                        continue
+                    restoring_nodes[node.dag_key()] = node
+                    task_req = (node.raw_entity(), self.restore_config, node.dag_key())
+                    task_requests[executor.submit(self.restore_single_entity, *task_req[0:2])] = task_req
         return self.bigquery_archived_dataset_entity
