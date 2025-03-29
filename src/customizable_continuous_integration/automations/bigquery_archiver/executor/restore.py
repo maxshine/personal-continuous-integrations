@@ -85,19 +85,11 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         self.bigquery_archived_dataset_entity.restore_self(self.bigquery_client, self.restore_config)
         self.logger.info(f"Restoring entities in the dataset {self.bigquery_archived_dataset_entity.fully_qualified_identity}")
         with ThreadPoolExecutor(max_workers=concurrency) as executor:
-            for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.tables):
-                task_req = (table_entity, self.restore_config)
-                task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
-            # for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.views):
-            #     task_req = (view_entity, self.restore_config)
-            #     task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
-            # for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.materialized_views):
-            #     task_req = (table_entity, self.restore_config)
-            #     task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
-            for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.user_define_functions):
-                task_req = (table_entity, self.restore_config)
-                task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
-            for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.stored_procedures):
+            for idx, table_entity in enumerate(
+                self.bigquery_archived_dataset_entity.tables
+                + self.bigquery_archived_dataset_entity.user_define_functions
+                + self.bigquery_archived_dataset_entity.stored_procedures
+            ):
                 task_req = (table_entity, self.restore_config)
                 task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
             for completed_task in as_completed(task_requests.keys()):
@@ -123,12 +115,10 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
                     )
                     executor.shutdown(wait=False, cancel_futures=True)
                     exit(1)
-        if failed_tasks_results:
-            self.logger.error(f"These restoring processes FAILED: {list(failed_tasks_results.keys())}")
-            exit(1)
-
         # Do dependency restoring
-        views_dag = build_dag("view_restore_dag", self.bigquery_archived_dataset_entity.views + self.bigquery_archived_dataset_entity.materialized_views, set())
+        views_dag = build_dag(
+            "view_restore_dag", self.bigquery_archived_dataset_entity.views + self.bigquery_archived_dataset_entity.materialized_views, set()
+        )
         task_requests.clear()
         failed_tasks_results.clear()
         ready_nodes = views_dag.get_ready_nodes()
@@ -148,6 +138,11 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
                         if ret:
                             self.logger.info(f"{completed_task_req[0].entity_type} {completed_task_req[0].identity} Restore Result: {ret}")
                             ready_nodes.extend(views_dag.complete_node(completed_task_req[2]))
+                        elif continue_on_failure:
+                            self.logger.error(
+                                f"{completed_task_req[0].entity_type} {completed_task_req[0].identity} Restore FAILED: {ret}, execution will be continued"
+                            )
+                            failed_tasks_results[completed_task_req[0].identity] = ret
                         else:
                             self.logger.error(
                                 f"{completed_task_req[0].entity_type} {completed_task_req[0].identity} Restore FAILED: {ret}, execution will be stopped"
@@ -166,4 +161,7 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
                     restoring_nodes[node.dag_key()] = node
                     task_req = (node.raw_entity(), self.restore_config, node.dag_key())
                     task_requests[executor.submit(self.restore_single_entity, *task_req[0:2])] = task_req
+        if failed_tasks_results:
+            self.logger.error(f"These restoring processes FAILED: {list(failed_tasks_results.keys())}")
+            exit(1)
         return self.bigquery_archived_dataset_entity
