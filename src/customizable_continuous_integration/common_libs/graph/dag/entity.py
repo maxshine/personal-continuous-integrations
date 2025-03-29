@@ -22,7 +22,7 @@ class DAGNodeInterface(abc.ABC):
 
 class DAGNode(object):
     def __init__(self, internal_entity: DAGNodeInterface) -> None:
-        if type(internal_entity) is not DAGNodeInterface:
+        if not isinstance(internal_entity, DAGNodeInterface):
             raise ValueError("The internal entity must be an instance of DAGNodeInterface")
         self._internal_entity = internal_entity
         self.dependents: set[str] = set()
@@ -52,15 +52,17 @@ class DAGNode(object):
     def is_ready(self) -> bool:
         return self.completed_requisites == self.requisites
 
-    def mark_external_requisites(self, dag_node_keys: set[str], external_node_keys: set[str]) -> None:
-        self.completed_requisites = self.requisites - dag_node_keys - external_node_keys
+    def mark_external_requisites(self, dag_keys: set[str], external_completed_requisites: set[str]) -> None:
+        self.completed_requisites = self.requisites.intersection(external_completed_requisites).union(self.completed_requisites)
+        if dag_keys:
+            self.completed_requisites = self.completed_requisites.union(self.requisites.difference(dag_keys))
 
 
 class DAG(object):
     def __init__(self, dag_identity: str, raw_entities: list[DAGNodeInterface]) -> None:
         self._dag_identity = dag_identity
         self._nodes: dict[str, DAGNode] = {}
-        self._completed_nodes: set[DAGNode] = set()
+        self._completed_nodes: dict[str, DAGNode] = dict()
         self._lock = threading.Lock()
         for raw_entity in raw_entities:
             node = DAGNode(raw_entity)
@@ -91,7 +93,7 @@ class DAG(object):
         with self._lock:
             node = self.get_node(node_key)
             if node:
-                self._completed_nodes.add(node)
+                self._completed_nodes[node_key] = node
             for dependent in node.dependents:
                 if dependent in self._nodes:
                     self._nodes[dependent].complete_requisite(node_key)
@@ -101,7 +103,7 @@ class DAG(object):
 
     def get_ready_nodes(self) -> list[DAGNode]:
         with self._lock:
-            return [node for node in self._nodes.values() if node.is_ready() and node not in self._completed_nodes]
+            return [node for node in self._nodes.values() if node.is_ready() and node.dag_key() not in self._completed_nodes.keys()]
 
     def mark_nodes_external_requisites(self, external_dependencies: set[str]) -> None:
         with self._lock:

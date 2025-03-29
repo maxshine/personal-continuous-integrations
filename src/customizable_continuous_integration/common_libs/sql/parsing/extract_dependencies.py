@@ -20,8 +20,6 @@ def extract_sql_select_statement_dependencies(sql: str, exclusions: set[str], di
     :return: The set of dependencies
     """
     parsed_sql_ast = sqlglot.parse_one(sql, dialect=dialect)
-    if type(parsed_sql_ast) is not sqlglot.exp.Select:
-        raise ValueError("The SQL statement must be a SELECT statement")
     ret = set()
     for node in parsed_sql_ast.find_all(sqlglot.exp.CTE):
         exclusions.add(node.alias_or_name)

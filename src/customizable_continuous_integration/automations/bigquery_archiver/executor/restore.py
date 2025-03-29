@@ -27,6 +27,7 @@ from customizable_continuous_integration.automations.bigquery_archiver.entity.vi
     BigqueryArchiveViewEntity,
 )
 from customizable_continuous_integration.automations.bigquery_archiver.executor.fetch import BaseExecutor
+from customizable_continuous_integration.common_libs.graph.dag.builder import build_dag
 
 
 class RestoreBigqueryDatasetExecutor(BaseExecutor):
@@ -87,12 +88,12 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
             for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.tables):
                 task_req = (table_entity, self.restore_config)
                 task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
-            for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.views):
-                task_req = (view_entity, self.restore_config)
-                task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
-            for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.materialized_views):
-                task_req = (table_entity, self.restore_config)
-                task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
+            # for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.views):
+            #     task_req = (view_entity, self.restore_config)
+            #     task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
+            # for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.materialized_views):
+            #     task_req = (table_entity, self.restore_config)
+            #     task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
             for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.user_define_functions):
                 task_req = (table_entity, self.restore_config)
                 task_requests[executor.submit(self.restore_single_entity, *task_req)] = task_req[0]
@@ -125,4 +126,6 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         if failed_tasks_results:
             self.logger.error(f"These restoring processes FAILED: {list(failed_tasks_results.keys())}")
             exit(1)
+        views_dag = build_dag("view_restore_dag", self.bigquery_archived_dataset_entity.views + self.bigquery_archived_dataset_entity.materialized_views, set())
+
         return self.bigquery_archived_dataset_entity

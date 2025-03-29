@@ -10,7 +10,7 @@ Revision History:
 
 from customizable_continuous_integration.common_libs.graph.dag.entity import DAG, DAGNodeInterface
 
-def build_dag(dag_id: str, raw_entities: list[DAGNodeInterface]) -> DAG:
+def build_dag(dag_id: str, raw_entities: list[DAGNodeInterface], external_completed_dependencies: set[str]) -> DAG:
     """
     Build a DAG from a list of raw entities.
 
@@ -23,5 +23,5 @@ def build_dag(dag_id: str, raw_entities: list[DAGNodeInterface]) -> DAG:
     """
     dag = DAG(dag_id, raw_entities)
     dag.normalize_reverse_relationship()
-    dag.mark_nodes_external_requisites(set())
+    dag.mark_nodes_external_requisites(external_completed_dependencies)
     return dag
