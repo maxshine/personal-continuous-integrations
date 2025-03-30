@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   08/02/2025   Ryan, Gao       Initial creation
+  28/03/2025   Ryan, Gao       Add default help argument
 """
 
 import argparse
@@ -31,7 +32,7 @@ def get_bigquery_archiver_logger(logger_name: str) -> logging.Logger:
 
 
 def generate_archive_arguments_parser() -> argparse.ArgumentParser:
-    args_parser = argparse.ArgumentParser()
+    args_parser = argparse.ArgumentParser(add_help=True)
     args_parser.add_argument("--archive-config-file", default="")
     args_parser.add_argument("--archive-source-gcp-project-id", default="")
     args_parser.add_argument("--archive-source-bigquery-dataset", default="")
@@ -40,7 +41,7 @@ def generate_archive_arguments_parser() -> argparse.ArgumentParser:
 
 
 def generate_restore_arguments_parser() -> argparse.ArgumentParser:
-    args_parser = argparse.ArgumentParser()
+    args_parser = argparse.ArgumentParser(add_help=True)
     args_parser.add_argument("--restore-config-file", default="")
     args_parser.add_argument("--restore-destination-gcp-project-id", default="")
     args_parser.add_argument("--restore-destination-bigquery-dataset", default="")
