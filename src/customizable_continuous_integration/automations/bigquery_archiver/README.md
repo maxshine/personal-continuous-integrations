@@ -17,6 +17,7 @@ Following table describes the common fields for both archive and restore task co
 | 2   | `concurrency`         | Integer | How many workers to process this task's entities, default is 1 (serial worker) |
 | 2   | `task_type`           | String  | Either `archive` or `restore` to mark the task purpose                         |
 | 3   | `continue_on_failure` | Boolean | Switch of control if the archive / restore should stop on failures.            |
+| 4   | `overwrite_existing`  | Boolean | Switch of control if the existing entity should be deleted before restoring.   |
 
 **Archive specific fields**:  
 

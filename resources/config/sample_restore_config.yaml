@@ -2,6 +2,7 @@
   concurrency: 1
   task_type: restore
   continue_on_failure: true
+  overwrite_existing: true
   destination_gcp_project_id:
   destination_bigquery_dataset:
   source_gcs_archive:
