@@ -126,13 +126,15 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
     @property
     def dependencies(self) -> set[str]:
         ret = set()
+        project_id = self.destination_gcp_project_id or self.project_id
+        dataset = self.destination_bigquery_dataset or self.dataset
         for e in extract_sql_select_statement_dependencies(self.mview_query, set()):
             if len(e.split(".")) == 3:
                 ret.add(e)
             elif len(e.split(".")) == 2:
-                ret.add(f"{self.project_id}.{e}")
+                ret.add(f"{project_id}.{e}")
             else:
-                ret.add(f"{self.project_id}.{self.dataset}.{e}")
+                ret.add(f"{project_id}.{dataset}.{e}")
         return ret
 
     def fetch_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> typing.Any:

@@ -17,6 +17,7 @@ Following table describes the common fields for both archive and restore task co
 | 2   | `concurrency`         | Integer | How many workers to process this task's entities, default is 1 (serial worker) |
 | 2   | `task_type`           | String  | Either `archive` or `restore` to mark the task purpose                         |
 | 3   | `continue_on_failure` | Boolean | Switch of control if the archive / restore should stop on failures.            |
+| 4   | `overwrite_existing`  | Boolean | Switch of control if the existing entity should be deleted before restoring.   |
 
 **Archive specific fields**:  
 
@@ -94,4 +95,6 @@ Following table describes the common fields for both archive and restore task co
    8. return_type
 
 ## Limitations
-- The archive / restore leverage the user's GCP credentials to access the Bigquery and GCS resources. The user should have the necessary permissions to access the resources.
+1. The archive / restore leverage the user's GCP credentials to access the Bigquery and GCS resources. The user should have the necessary permissions to access the resources.
+2. While restoring the entities having interdependencies, the restoring process only check the completion of the previous task. In a case of failed requisites, the dependents will be restored anyway even if they are doomed to fail all the time.
+3. While restoring the entities having interdependencies, the built DAG assumes the interdependencies are one-way that Bigquery has checked this.

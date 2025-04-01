@@ -107,7 +107,7 @@ def restore_command(cli_args: list[str]) -> None:
         bigquery_dataset_config["destination_gcp_project_id"] = restore_config["destination_gcp_project_id"]
         bigquery_dataset_config["destination_bigquery_dataset"] = restore_config["destination_bigquery_dataset"]
         restore_executor = RestoreBigqueryDatasetExecutor(
-            bigquery_archived_dataset_config=bigquery_dataset_config, restore_config={"overwrite_existing": True}, logger=_logger
+            bigquery_archived_dataset_config=bigquery_dataset_config, restore_config=restore_config, logger=_logger
         )
         restore_executor.execute()
         _logger.info(f"Restoring task {restore_config.get('name', 'ad-hoc')} completed")

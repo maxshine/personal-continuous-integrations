@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   03/03/2025   Ryan, Gao       Add dependencies property
+  23/03/2025   Ryan, Gao       Add DAGNodeInterface
 """
 
 import datetime
@@ -17,6 +18,7 @@ import pydantic
 from typing_extensions import Self
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.bigquery_metadata import BigqueryBaseMetadata
+from customizable_continuous_integration.common_libs.graph.dag.entity import DAGNodeInterface
 
 
 class BigquerySchemaFieldEntity(pydantic.BaseModel):
@@ -45,7 +47,7 @@ class BigquerySchemaFieldEntity(pydantic.BaseModel):
         return schema_field
 
 
-class BigqueryBaseArchiveEntity(pydantic.BaseModel):
+class BigqueryBaseArchiveEntity(pydantic.BaseModel, DAGNodeInterface):
     bigquery_metadata: BigqueryBaseMetadata
     metadata_version: str = "v1"
     gcs_prefix: str
@@ -95,6 +97,12 @@ class BigqueryBaseArchiveEntity(pydantic.BaseModel):
     @property
     def dependencies(self) -> set[str]:
         return set()
+
+    def dag_dependencies(self) -> set[str]:
+        return self.dependencies
+
+    def dag_key(self) -> str:
+        return self.fully_qualified_identity
 
     def from_dataset_reference(self, dataset_reference: str):
         pass
