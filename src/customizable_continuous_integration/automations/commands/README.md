@@ -52,6 +52,7 @@ Deprecated from *N/A*.
 | No. | Version | Features                                                                         | Bugfixes                                                |
 |:----|:--------|:---------------------------------------------------------------------------------|:--------------------------------------------------------|
 | 1   | v1.4.0  | - Initial function archiving Bigquery dataset into GCS and restoring it from GCS | N/A                                                     |
+| 2   | v1.4.1  | - Add archiver version field for future compatibility                            | N/A                                                     |
 
 ### help
 Available from **v1.4.0**.
