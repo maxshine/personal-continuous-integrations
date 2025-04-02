@@ -8,6 +8,7 @@ Revision History:
   23/02/2025   Ryan, Gao       Initial creation
   03/03/2025   Ryan, Gao       Add dependencies property
   23/03/2025   Ryan, Gao       Add DAGNodeInterface
+  02/04/2025   Ryan, Gao       Add archiver version for backwards compatibility
 """
 
 import datetime
@@ -50,6 +51,7 @@ class BigquerySchemaFieldEntity(pydantic.BaseModel):
 class BigqueryBaseArchiveEntity(pydantic.BaseModel, DAGNodeInterface):
     bigquery_metadata: BigqueryBaseMetadata
     metadata_version: str = "v1"
+    archiver_version: str = "v1"
     gcs_prefix: str
     archived_datetime: datetime.datetime
     is_archived: bool = False

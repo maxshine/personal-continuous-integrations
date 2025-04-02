@@ -98,3 +98,13 @@ Following table describes the common fields for both archive and restore task co
 1. The archive / restore leverage the user's GCP credentials to access the Bigquery and GCS resources. The user should have the necessary permissions to access the resources.
 2. While restoring the entities having interdependencies, the restoring process only check the completion of the previous task. In a case of failed requisites, the dependents will be restored anyway even if they are doomed to fail all the time.
 3. While restoring the entities having interdependencies, the built DAG assumes the interdependencies are one-way that Bigquery has checked this.
+
+## Persistent data versioning
+### metadata_version (used to track GCP Bigquery metadata changes)
+1. `v1`
+   1. introduced on 2025-02-23 and tested with GCP Bigquery by 2025-04-02
+   2. supported from archiver version 1.4.0
+### archiver_version (used to track the archiver implementation changes)
+1. `v1` --  introduced on 2025-04-02 and tested with GCP Bigquery by 2025-04-02
+   1. introduced on 2025-02-23 and tested with GCP Bigquery by 2025-04-02
+   2. supported from archiver version 1.4.0

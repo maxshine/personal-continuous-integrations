@@ -41,3 +41,9 @@ N/A
 N/A
 - Dependencies
   1. DBT Core version 1.8.5 with Bigquery adapter 1.8.2
+
+### v1.4.1 (general release succeeding from v1.3.4 to latest codebase)
+- Features
+N/A
+- Bugfix
+N/A
