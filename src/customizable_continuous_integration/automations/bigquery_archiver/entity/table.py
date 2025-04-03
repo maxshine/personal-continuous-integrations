@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
+  04/04/2025   Ryan, Gao       Set DEFLATE as default compression
 """
 
 import json
@@ -23,7 +24,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
     bigquery_metadata: BigqueryTableMetadata
     schema_fields: list[BigquerySchemaFieldEntity] = []
     data_archive_format: str = google.cloud.bigquery.job.DestinationFormat.AVRO
-    data_compression: str = google.cloud.bigquery.job.Compression.SNAPPY
+    data_compression: str = google.cloud.bigquery.job.Compression.DEFLATE
     partition_config: BigqueryPartitionConfig | None = None
 
     @property
