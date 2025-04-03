@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
+  03/04/2025   Ryan, Gao       Set project in dataset gcs_prefix
 """
 
 import datetime
@@ -53,7 +54,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
 
     @property
     def archive_prefix(self):
-        return f"{self.gcs_prefix}/dataset={self.identity}/archive_ts={self.archived_datetime_str}"
+        return f"{self.gcs_prefix}/project={self.project_id}/dataset={self.identity}/archive_ts={self.archived_datetime_str}"
 
     @property
     def metadata_serialized_path(self):

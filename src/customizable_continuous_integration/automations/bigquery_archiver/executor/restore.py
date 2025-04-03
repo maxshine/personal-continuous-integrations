@@ -81,7 +81,7 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         concurrency = self.restore_config.get("concurrency", 1)
         continue_on_failure = self.restore_config.get("continue_on_failure", False)
 
-        self.logger.info(f"Restoring dataset itself {self.bigquery_archived_dataset_entity.fully_qualified_identity}")
+        self.logger.info(f"Restoring dataset {self.bigquery_archived_dataset_entity.fully_qualified_identity} itself")
         self.bigquery_archived_dataset_entity.restore_self(self.bigquery_client, self.restore_config)
         self.logger.info(f"Restoring entities in the dataset {self.bigquery_archived_dataset_entity.fully_qualified_identity}")
         with ThreadPoolExecutor(max_workers=concurrency) as executor:
