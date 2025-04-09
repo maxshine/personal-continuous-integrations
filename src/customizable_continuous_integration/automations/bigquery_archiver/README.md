@@ -29,11 +29,12 @@ Following table describes the common fields for both archive and restore task co
 
 **Restore specific fields**:  
 
-| No. | Field                          | Type     | Description                                               |
-|:----|:-------------------------------|:---------|:----------------------------------------------------------|
-| 1   | `destination_gcp_project_id`   | String   | The GCP project id for the target dataset of restoring    |
-| 2   | `destination_bigquery_dataset` | String   | The dataset name of the target dataset of restoring       |
-| 3   | `source_gcs_archive`           | String   | The source GCS prefix which hosts the `dataset.json` file |
+| No. | Field                           | Type    | Description                                               |
+|:----|:--------------------------------|:--------|:----------------------------------------------------------|
+| 1   | `destination_gcp_project_id`    | String  | The GCP project id for the target dataset of restoring    |
+| 2   | `destination_bigquery_dataset`  | String  | The dataset name of the target dataset of restoring       |
+| 3   | `source_gcs_archive`            | String  | The source GCS prefix which hosts the `dataset.json` file |
+| 4   | `attach_archive_ts_to_label`    | Boolean | When true, archie_ts string added as label; Default true; |
 
 ## Supported Bigquery Entities and their fields
 1. Table

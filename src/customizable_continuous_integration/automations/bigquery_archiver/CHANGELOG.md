@@ -23,3 +23,11 @@ N/A
 
 - Bugfix
 N/A
+
+### v1.4.2
+- Features
+  1. Add `attach_archive_ts_to_label` field to the archive for future compatibility.
+     - This field is used to attach the archive timestamp to the label of the archive.
+     - This field is defaulted to `true` and can be set to `false` to disable the attachment.
+- Bugfix
+N/A
