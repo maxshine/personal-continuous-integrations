@@ -3,6 +3,7 @@
   task_type: restore
   continue_on_failure: true
   overwrite_existing: true
+  attach_archive_ts_to_label: false
   destination_gcp_project_id:
   destination_bigquery_dataset:
   source_gcs_archive:

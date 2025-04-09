@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   05/03/2025   Ryan, Gao       Use sqlparse to handle view query transformation
+  10/04/2025   Ryan, Gao       Add archive timestamp to restored dataset labels
 """
 
 import json
@@ -83,6 +84,8 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         view = bigquery_client.create_table(view, exists_ok=True)
         view.description = self.bigquery_metadata.description
         view.labels = self.bigquery_metadata.labels
+        if restore_config.get("attach_archive_ts_to_label", True):
+            view.labels["archive_ts"] = self.archived_datetime_str
         view.schema = [f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None
         table = bigquery_client.update_table(view, ["description", "schema", "labels"])
         return table
@@ -178,6 +181,8 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
         view = bigquery_client.get_table(fully_qualified_identity)
         view.description = self.bigquery_metadata.description
         view.labels = self.bigquery_metadata.labels
+        if restore_config.get("attach_archive_ts_to_label", True):
+            view.labels["archive_ts"] = self.archived_datetime_str
         view.schema = [f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None
         table = bigquery_client.update_table(view, ["description", "labels"])
         return table

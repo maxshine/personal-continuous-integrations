@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   04/04/2025   Ryan, Gao       Set DEFLATE as default compression
+  10/04/2025   Ryan, Gao       Add archive timestamp to restored dataset labels
 """
 
 import json
@@ -97,5 +98,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         load_job.result()
         table = bigquery_client.get_table(fully_qualified_identity)
         table.labels = self.bigquery_metadata.labels
+        if restore_config.get("attach_archive_ts_to_label", True):
+            table.labels["archive_ts"] = self.archived_datetime_str
         bigquery_client.update_table(table, ["labels"])
         return table

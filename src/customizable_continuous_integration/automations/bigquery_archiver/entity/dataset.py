@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   03/04/2025   Ryan, Gao       Set project in dataset gcs_prefix
+  10/04/2025   Ryan, Gao       Add archive timestamp to restored dataset labels
 """
 
 import datetime
@@ -277,4 +278,6 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         dataset = bigquery_client.create_dataset(fully_qualified_identity, exists_ok=True)
         dataset.description = self.bigquery_metadata.description
         dataset.labels = self.bigquery_metadata.labels
+        if restore_config.get("attach_archive_ts_to_label", True):
+            dataset.labels["archive_ts"] = self.archived_datetime_str
         bigquery_client.update_dataset(dataset, ["description", "labels"])
