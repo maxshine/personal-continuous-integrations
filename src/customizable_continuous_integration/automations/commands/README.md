@@ -53,7 +53,7 @@ Deprecated from *N/A*.
 |:----|:--------|:---------------------------------------------------------------------------------|:--------------------------------------------------------|
 | 1   | v1.4.0  | - Initial function archiving Bigquery dataset into GCS and restoring it from GCS | N/A                                                     |
 | 2   | v1.4.1  | - Add archiver version field for future compatibility and DEFLATE compression    | N/A                                                     |
-| 3   | v1.4.2  | - Add archive ts label;                                                          | N/A                                                     |
+| 3   | v1.4.2  | - Add archive ts label; Add `description` in restored routines;                  | N/A                                                     |
 
 ### help
 Available from **v1.4.0**.

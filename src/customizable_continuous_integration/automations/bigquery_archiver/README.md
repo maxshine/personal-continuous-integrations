@@ -80,20 +80,18 @@ Following table describes the common fields for both archive and restore task co
    1. project_id
    2. dataset
    3. description
-   4. labels
-   5. body
-   6. arguments
-   7. language
-   8. return_type
+   4. body
+   5. arguments
+   6. language
+   7. return_type
 6. Stored Procedure
    1. project_id
    2. dataset
    3. description
-   4. labels
-   5. body
-   6. arguments
-   7. language
-   8. return_type
+   4. body
+   5. arguments
+   6. language
+   7. return_type
 
 ## Limitations
 1. The archive / restore leverage the user's GCP credentials to access the Bigquery and GCS resources. The user should have the necessary permissions to access the resources.
