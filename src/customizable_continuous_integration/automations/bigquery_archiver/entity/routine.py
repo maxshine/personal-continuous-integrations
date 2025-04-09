@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
+  10/04/2025   Ryan, Gao       Add description field in the restore method
 """
 
 import typing
@@ -68,8 +69,8 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
         job = bigquery_client.query(stmt)
         job.result()
         routine = bigquery_client.get_routine(fully_qualified_identity)
-        # routine.description = self.bigquery_metadata.description
-        # table = bigquery_client.update_routine(routine, ["description"])
+        routine.description = self.bigquery_metadata.description
+        routine = bigquery_client.update_routine(routine, ["description", "type_", "body", "arguments", "language", "return_type"])
         return routine
 
     def modify_self_query(self, modify_config: dict) -> typing.Any:
@@ -126,8 +127,8 @@ class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
         job = bigquery_client.query(stmt)
         job.result()
         routine = bigquery_client.get_routine(fully_qualified_identity)
-        # routine.description = self.bigquery_metadata.description
-        # table = bigquery_client.update_routine(routine, ["description"])
+        routine.description = self.bigquery_metadata.description
+        routine = bigquery_client.update_routine(routine, ["description", "type_", "body", "arguments", "language", "return_type"])
         return routine
 
     def modify_self_query(self, modify_config: dict) -> typing.Any:
