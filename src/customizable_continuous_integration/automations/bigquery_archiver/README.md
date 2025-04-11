@@ -29,12 +29,13 @@ Following table describes the common fields for both archive and restore task co
 
 **Restore specific fields**:  
 
-| No. | Field                           | Type    | Description                                               |
-|:----|:--------------------------------|:--------|:----------------------------------------------------------|
-| 1   | `destination_gcp_project_id`    | String  | The GCP project id for the target dataset of restoring    |
-| 2   | `destination_bigquery_dataset`  | String  | The dataset name of the target dataset of restoring       |
-| 3   | `source_gcs_archive`            | String  | The source GCS prefix which hosts the `dataset.json` file |
-| 4   | `attach_archive_ts_to_label`    | Boolean | When true, archie_ts string added as label; Default true; |
+| No. | Field                          | Type    | Description                                               |
+|:----|:-------------------------------|:--------|:----------------------------------------------------------|
+| 1   | `destination_gcp_project_id`   | String  | The GCP project id for the target dataset of restoring    |
+| 2   | `destination_bigquery_dataset` | String  | The dataset name of the target dataset of restoring       |
+| 3   | `source_gcs_archive`           | String  | The source GCS prefix which hosts the `dataset.json` file |
+| 4   | `attach_archive_ts_to_label`   | Boolean | When true, archie_ts string added as label; Default true; |
+| 5   | `skip_restore`                 | Dict    | When set, put true to entity names skip them in restore   |
 
 ## Supported Bigquery Entities and their fields
 1. Table
@@ -75,7 +76,6 @@ Following table describes the common fields for both archive and restore task co
    7. mview_query
    8. enable_refresh
    9. refresh_interval_seconds
-   10. partition_config
 5. Function
    1. project_id
    2. dataset
@@ -92,11 +92,22 @@ Following table describes the common fields for both archive and restore task co
    5. arguments
    6. language
    7. return_type
+7. External Table
+   1. project_id
+   2. dataset
+   3. description
+   4. labels
+   5. tags
+   6. schema_fields
+   7. partition_config 
+   8. external_data_config
 
 ## Limitations
 1. The archive / restore leverage the user's GCP credentials to access the Bigquery and GCS resources. The user should have the necessary permissions to access the resources.
 2. While restoring the entities having interdependencies, the restoring process only check the completion of the previous task. In a case of failed requisites, the dependents will be restored anyway even if they are doomed to fail all the time.
 3. While restoring the entities having interdependencies, the built DAG assumes the interdependencies are one-way that Bigquery has checked this.
+4. When using `skip_restore`, be cautious it may break the DAG of view entities.
+5. Body updating is not yet implemented for functions and stored procedures.
 
 ## Persistent data versioning
 ### metadata_version (used to track GCP Bigquery metadata changes)

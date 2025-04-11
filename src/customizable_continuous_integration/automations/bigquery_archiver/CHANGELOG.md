@@ -30,5 +30,6 @@ N/A
      - This field is used to attach the archive timestamp to the label of the archive.
      - This field is defaulted to `true` and can be set to `false` to disable the attachment.
   2. Add `description` field in restored routine entities.
+  3. Support external table entities in the archive and restore process.
 - Bugfix
-N/A
+  1. Strip tailing slash from GCS path in the archive and restore process.

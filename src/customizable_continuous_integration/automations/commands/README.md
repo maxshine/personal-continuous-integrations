@@ -49,11 +49,11 @@ Deprecated from *N/A*.
 Available from **v1.4.0**.
 Deprecated from *N/A*.
 #### Version History
-| No. | Version | Features                                                                         | Bugfixes                                                |
-|:----|:--------|:---------------------------------------------------------------------------------|:--------------------------------------------------------|
-| 1   | v1.4.0  | - Initial function archiving Bigquery dataset into GCS and restoring it from GCS | N/A                                                     |
-| 2   | v1.4.1  | - Add archiver version field for future compatibility and DEFLATE compression    | N/A                                                     |
-| 3   | v1.4.2  | - Add archive ts label; Add `description` in restored routines;                  | N/A                                                     |
+| No. | Version | Features                                                                         | Bugfixes                          |
+|:----|:--------|:---------------------------------------------------------------------------------|:----------------------------------|
+| 1   | v1.4.0  | - Initial function archiving Bigquery dataset into GCS and restoring it from GCS | N/A                               |
+| 2   | v1.4.1  | - Add archiver version field for future compatibility and DEFLATE compression    | N/A                               |
+| 3   | v1.4.2  | - Add archive ts label; Add `description` in routines; Support External table    | Strip tailing slash from gcs path |
 
 ### help
 Available from **v1.4.0**.
