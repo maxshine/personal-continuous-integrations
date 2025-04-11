@@ -49,6 +49,29 @@ class BigqueryArchiveGenericExternalTableEntity(BigqueryBaseArchiveEntity):
         self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in external_table.schema]
         self.bigquery_metadata.description = external_table.description
         self.b64encoded_external_data_configuration = base64.standard_b64encode(pickle.dumps(external_table.external_data_configuration))
+        partition_config = None
+        if external_table.time_partitioning:
+            partition_config = BigqueryPartitionConfig(
+                partition_type=external_table.time_partitioning.type_,
+                partition_field=external_table.time_partitioning.field,
+                partition_expiration_ms=external_table.time_partitioning.expiration_ms or 0,
+                partition_require_filter=external_table.time_partitioning.require_partition_filter or False,
+                partition_category="TIME",
+            )
+        elif external_table.range_partitioning:
+            partition_config = BigqueryPartitionConfig(
+                partition_type="",
+                partition_field=external_table.range_partitioning.field,
+                partition_expiration_ms=0,
+                partition_require_filter=False,
+                partition_category="RANGE",
+                partition_range=[
+                    external_table.range_partitioning.range_.start,
+                    external_table.range_partitioning.range_.end,
+                    external_table.range_partitioning.range_.interval,
+                ],
+            )
+        self.partition_config = partition_config
 
     def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         self.is_archived = True
@@ -84,7 +107,16 @@ class BigqueryArchiveGenericExternalTableEntity(BigqueryBaseArchiveEntity):
         target_table.external_data_configuration = pickle.loads(base64.standard_b64decode(self.b64encoded_external_data_configuration))
         target_table.labels = self.bigquery_metadata.labels
         target_table.description = self.bigquery_metadata.description
-        target_table.time_partitioning = self.partition_config.to_bigquery_time_partitioning() if self.partition_config else None
+        target_table.time_partitioning = (
+            self.partition_config.to_bigquery_time_partitioning()
+            if self.partition_config and self.partition_config.partition_category == "TIME"
+            else None
+        )
+        target_table.range_partitioning = (
+            self.partition_config.to_bigquery_range_partitioning()
+            if self.partition_config and self.partition_config.partition_category == "RANGE"
+            else None
+        )
         if restore_config.get("attach_archive_ts_to_label", True):
             target_table.labels["archive_ts"] = self.archived_datetime_str
         table = bigquery_client.create_table(target_table)
