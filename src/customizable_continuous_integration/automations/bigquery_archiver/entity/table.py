@@ -7,7 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   04/04/2025   Ryan, Gao       Set DEFLATE as default compression
-  10/04/2025   Ryan, Gao       Add archive timestamp to restored dataset labels
+  10/04/2025   Ryan, Gao       Add archive timestamp to dataset labels; Add skip_restore
 """
 
 import json
@@ -81,6 +81,9 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("skip_restore", {}).get(self.identity, False):
+            print(f"Skip restoring {self.entity_type} {fully_qualified_identity}")
+            return
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
         load_job = bigquery_client.load_table_from_uri(

@@ -4,6 +4,7 @@
   continue_on_failure: true
   overwrite_existing: true
   attach_archive_ts_to_label: true
+  skip_restore: {}
   destination_gcp_project_id:
   destination_bigquery_dataset:
   source_gcs_archive:
