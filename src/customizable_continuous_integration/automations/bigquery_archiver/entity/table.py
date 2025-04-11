@@ -7,7 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   04/04/2025   Ryan, Gao       Set DEFLATE as default compression
-  10/04/2025   Ryan, Gao       Add archive timestamp to dataset labels; Add skip_restore
+  10/04/2025   Ryan, Gao       Add archive timestamp labels; Add skip_restore; Add range partitioning
 """
 
 import json
@@ -46,6 +46,25 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         table = bigquery_client.get_table(self.fully_qualified_identity)
         self.schema_fields = [BigquerySchemaFieldEntity.from_dict(f.to_api_repr()) for f in table.schema]
         self.bigquery_metadata.description = table.description
+        partition_config = None
+        if table.time_partitioning:
+            partition_config = BigqueryPartitionConfig(
+                partition_type=table.time_partitioning.type_,
+                partition_field=table.time_partitioning.field,
+                partition_expiration_ms=table.time_partitioning.expiration_ms or 0,
+                partition_require_filter=table.time_partitioning.require_partition_filter or False,
+                partition_category="TIME",
+            )
+        elif table.range_partitioning:
+            partition_config = BigqueryPartitionConfig(
+                partition_type="",
+                partition_field=table.range_partitioning.field,
+                partition_expiration_ms=0,
+                partition_require_filter=False,
+                partition_category="RANGE",
+                partition_range=[table.range_partitioning.range_.start, table.range_partitioning.range_.end, table.range_partitioning.range_.interval],
+            )
+        self.partition_config = partition_config
 
     def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
         if not bigquery_client:
@@ -94,7 +113,9 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
                 source_format=self.data_archive_format,
                 schema=[f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None,
                 destination_table_description=self.bigquery_metadata.description,
-                time_partitioning=(self.partition_config.to_bigquery_time_partitioning() if self.partition_config else None),
+                time_partitioning=(self.partition_config.to_bigquery_time_partitioning() if self.partition_config and self.partition_config.partition_category == "TIME" else None),
+                range_partitioning=(
+                    self.partition_config.to_bigquery_range_partitioning() if self.partition_config and self.partition_config.partition_category == "RANGE" else None),
                 use_avro_logical_types=True,
             ),
         )
