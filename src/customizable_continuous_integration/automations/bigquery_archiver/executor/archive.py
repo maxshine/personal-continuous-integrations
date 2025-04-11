@@ -1,4 +1,13 @@
-"""This module hosts achive dataset objects action"""
+"""This module hosts archive dataset objects action
+
+Author:
+  Ryan,Gao (ryangao-au@outlook.com)
+Revision History:
+  Date         Author		   Comments
+------------------------------------------------------------------------------
+  23/02/2025   Ryan, Gao       Initial creation
+  11/04/2025   Ryan, Gao       Add support for external table
+"""
 
 import logging
 import typing
@@ -9,6 +18,7 @@ import google.cloud.bigquery
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.base import BigqueryBaseArchiveEntity
 from customizable_continuous_integration.automations.bigquery_archiver.entity.dataset import BigqueryArchivedDatasetEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.external import BigqueryArchiveGenericExternalTableEntity
 from customizable_continuous_integration.automations.bigquery_archiver.entity.routine import (
     BigqueryArchiveFunctionEntity,
     BigqueryArchiveStoredProcedureEntity,
@@ -45,6 +55,7 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
             BigqueryArchiveFunctionEntity,
             BigqueryArchiveStoredProcedureEntity,
             BigqueryArchiveMaterializedViewEntity,
+            BigqueryArchiveGenericExternalTableEntity,
         )
         if type(entity) in supported_archive_entity_types:
             entity.archive_self(self.bigquery_client)
@@ -62,6 +73,9 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
         with ThreadPoolExecutor(max_workers=concurrency) as executor:
             for idx, table_entity in enumerate(self.bigquery_archived_dataset_entity.tables):
                 task_req = table_entity
+                task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
+            for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.external_tables):
+                task_req = view_entity
                 task_requests[executor.submit(self.archive_single_entity, task_req)] = task_req
             for idx, view_entity in enumerate(self.bigquery_archived_dataset_entity.views):
                 task_req = view_entity
