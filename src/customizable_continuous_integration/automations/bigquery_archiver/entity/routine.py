@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
+  10/04/2025   Ryan, Gao       Add description field in the restore method; Add skip_restore
 """
 
 import typing
@@ -58,6 +59,9 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("skip_restore", {}).get(self.identity, False):
+            print(f"Skip restoring {self.entity_type} {fully_qualified_identity}")
+            return
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_routine(fully_qualified_identity, not_found_ok=True)
         stmt = f"""CREATE FUNCTION `{fully_qualified_identity}`({", ".join([f"{arg['name']} {arg['data_type']}" for arg in self.arguments])})
@@ -68,8 +72,8 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
         job = bigquery_client.query(stmt)
         job.result()
         routine = bigquery_client.get_routine(fully_qualified_identity)
-        # routine.description = self.bigquery_metadata.description
-        # table = bigquery_client.update_routine(routine, ["description"])
+        routine.description = self.bigquery_metadata.description
+        routine = bigquery_client.update_routine(routine, ["description", "type_", "body", "arguments", "language", "return_type"])
         return routine
 
     def modify_self_query(self, modify_config: dict) -> typing.Any:
@@ -118,6 +122,9 @@ class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("skip_restore", {}).get(self.identity, False):
+            print(f"Skip restoring {self.entity_type} {fully_qualified_identity}")
+            return
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_routine(fully_qualified_identity, not_found_ok=True)
         stmt = f"""CREATE PROCEDURE `{fully_qualified_identity}`({", ".join([f"{arg['name']} {arg['data_type']}" for arg in self.arguments])})
@@ -126,8 +133,8 @@ class BigqueryArchiveStoredProcedureEntity(BigqueryBaseArchiveEntity):
         job = bigquery_client.query(stmt)
         job.result()
         routine = bigquery_client.get_routine(fully_qualified_identity)
-        # routine.description = self.bigquery_metadata.description
-        # table = bigquery_client.update_routine(routine, ["description"])
+        routine.description = self.bigquery_metadata.description
+        routine = bigquery_client.update_routine(routine, ["description", "type_", "body", "arguments", "language", "return_type"])
         return routine
 
     def modify_self_query(self, modify_config: dict) -> typing.Any:

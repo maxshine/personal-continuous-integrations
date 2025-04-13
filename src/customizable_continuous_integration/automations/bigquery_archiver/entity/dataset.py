@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   03/04/2025   Ryan, Gao       Set project in dataset gcs_prefix
+  10/04/2025   Ryan, Gao       Add archive timestamp labels; Add skip_restore
 """
 
 import datetime
@@ -25,6 +26,7 @@ from customizable_continuous_integration.automations.bigquery_archiver.entity.bi
     BigqueryTableMetadata,
     BigqueryViewMetadata,
 )
+from customizable_continuous_integration.automations.bigquery_archiver.entity.external import BigqueryArchiveGenericExternalTableEntity
 from customizable_continuous_integration.automations.bigquery_archiver.entity.routine import (
     BigqueryArchiveFunctionEntity,
     BigqueryArchiveStoredProcedureEntity,
@@ -43,6 +45,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     materialized_views: list[BigqueryArchiveMaterializedViewEntity] = []
     user_define_functions: list[BigqueryArchiveFunctionEntity] = []
     stored_procedures: list[BigqueryArchiveStoredProcedureEntity] = []
+    external_tables: list[BigqueryArchiveGenericExternalTableEntity] = []
 
     @property
     def fully_qualified_identity(self) -> str:
@@ -74,17 +77,9 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
     def generate_bigquery_archived_table(
         self, bigquery_item: google.cloud.bigquery.table.TableListItem, base_metadata: BigqueryBaseMetadata, **kwargs
     ) -> BigqueryArchiveTableEntity:
-        partition_config = None
-        if bigquery_item.time_partitioning:
-            partition_config = BigqueryPartitionConfig(
-                partition_type=bigquery_item.time_partitioning.type_,
-                partition_field=bigquery_item.time_partitioning.field,
-                partition_expiration_ms=bigquery_item.time_partitioning.expiration_ms or 0,
-                partition_require_filter=bigquery_item.time_partitioning.require_partition_filter or False,
-            )
         d = base_metadata.model_dump()
         extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveTableEntity.model_fields}
-        extra_fields.update({"bigquery_metadata": BigqueryTableMetadata.from_dict(d), "partition_config": partition_config})
+        extra_fields.update({"bigquery_metadata": BigqueryTableMetadata.from_dict(d)})
         return BigqueryArchiveTableEntity(**extra_fields)
 
     def generate_bigquery_archived_view(
@@ -119,6 +114,22 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         extra_fields.update({"bigquery_metadata": BigqueryBaseMetadata.from_dict(d)})
         return BigqueryArchiveStoredProcedureEntity(**extra_fields)
 
+    def generate_bigquery_archived_external_table(
+        self, bigquery_item: google.cloud.bigquery.table.TableListItem, base_metadata: BigqueryBaseMetadata, **kwargs
+    ) -> BigqueryArchiveViewEntity:
+        partition_config = None
+        if bigquery_item.time_partitioning:
+            partition_config = BigqueryPartitionConfig(
+                partition_type=bigquery_item.time_partitioning.type_,
+                partition_field=bigquery_item.time_partitioning.field,
+                partition_expiration_ms=bigquery_item.time_partitioning.expiration_ms or 0,
+                partition_require_filter=bigquery_item.time_partitioning.require_partition_filter or False,
+            )
+        d = base_metadata.model_dump()
+        extra_fields = {k: v for k, v in kwargs.items() if k in BigqueryArchiveTableEntity.model_fields}
+        extra_fields.update({"bigquery_metadata": BigqueryTableMetadata.from_dict(d), "partition_config": partition_config})
+        return BigqueryArchiveGenericExternalTableEntity(**extra_fields)
+
     def generate_bigquery_archived_entity_from_table_item(
         self, bigquery_item: google.cloud.bigquery.table.TableListItem | google.cloud.bigquery.routine.Routine
     ) -> (
@@ -127,6 +138,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         | BigqueryArchiveFunctionEntity
         | BigqueryArchiveMaterializedViewEntity
         | BigqueryArchiveStoredProcedureEntity
+        | BigqueryArchiveGenericExternalTableEntity
         | None
     ):
         metadata_obj = BigqueryBaseMetadata.from_dict(self.bigquery_metadata.model_dump())
@@ -186,13 +198,12 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
                     destination_bigquery_dataset=self.destination_bigquery_dataset,
                     metadata_schema=self.metadata_version,
                 )
-            elif bigquery_item.table_type == "STORED_PROCEDURE":
-                return self.generate_bigquery_archived_stored_procedure(
+            elif bigquery_item.table_type == "EXTERNAL":
+                return self.generate_bigquery_archived_external_table(
                     bigquery_item,
                     metadata_obj,
-                    defining_query="Not populated yet",
                     archived_datetime=self.archived_datetime,
-                    gcs_prefix=self.generate_sub_serialization_prefix("stored_procedure"),
+                    gcs_prefix=self.generate_sub_serialization_prefix("external"),
                     destination_gcp_project_id=self.destination_gcp_project_id,
                     destination_bigquery_dataset=self.destination_bigquery_dataset,
                     metadata_schema=self.metadata_version,
@@ -206,6 +217,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             "materialized_view": "materialized_views",
             "function": "functions",
             "stored_procedure": "stored_procedures",
+            "external": "external_tables",
         }
         return f"{self.archive_prefix}/{sub_types_map.get(sub_type, 'entities')}"
 
@@ -228,6 +240,9 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
 
     def populate_sub_restore_info(self) -> typing.Any:
         for t in self.tables:
+            t.destination_gcp_project_id = self.destination_gcp_project_id
+            t.destination_bigquery_dataset = self.destination_bigquery_dataset
+        for t in self.external_tables:
             t.destination_gcp_project_id = self.destination_gcp_project_id
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
         for t in self.views:
@@ -272,9 +287,14 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}"
+        if restore_config.get("skip_restore", {}).get(self.identity, False):
+            print(f"Skip restoring {self.entity_type} {fully_qualified_identity}")
+            return
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_dataset(fully_qualified_identity, delete_contents=True, not_found_ok=True)
         dataset = bigquery_client.create_dataset(fully_qualified_identity, exists_ok=True)
         dataset.description = self.bigquery_metadata.description
         dataset.labels = self.bigquery_metadata.labels
+        if restore_config.get("attach_archive_ts_to_label", True):
+            dataset.labels["archive_ts"] = self.archived_datetime_str
         bigquery_client.update_dataset(dataset, ["description", "labels"])

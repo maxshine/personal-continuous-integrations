@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   05/03/2025   Ryan, Gao       Use sqlparse to handle view query transformation
+  10/04/2025   Ryan, Gao       Add archive timestamp to dataset labels; Add skip_restore
 """
 
 import json
@@ -76,6 +77,9 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("skip_restore", {}).get(self.identity, False):
+            print(f"Skip restoring {self.entity_type} {fully_qualified_identity}")
+            return
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
         view = google.cloud.bigquery.Table(fully_qualified_identity)
@@ -83,6 +87,8 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
         view = bigquery_client.create_table(view, exists_ok=True)
         view.description = self.bigquery_metadata.description
         view.labels = self.bigquery_metadata.labels
+        if restore_config.get("attach_archive_ts_to_label", True):
+            view.labels["archive_ts"] = self.archived_datetime_str
         view.schema = [f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None
         table = bigquery_client.update_table(view, ["description", "schema", "labels"])
         return table
@@ -168,6 +174,9 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
         fully_qualified_identity = self.fully_qualified_identity
         if self.destination_gcp_project_id and self.destination_bigquery_dataset:
             fully_qualified_identity = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}.{self.identity}"
+        if restore_config.get("skip_restore", {}).get(self.identity, False):
+            print(f"Skip restoring {self.entity_type} {fully_qualified_identity}")
+            return
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
         stmt = f"""CREATE MATERIALIZED VIEW {fully_qualified_identity}
@@ -178,6 +187,8 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
         view = bigquery_client.get_table(fully_qualified_identity)
         view.description = self.bigquery_metadata.description
         view.labels = self.bigquery_metadata.labels
+        if restore_config.get("attach_archive_ts_to_label", True):
+            view.labels["archive_ts"] = self.archived_datetime_str
         view.schema = [f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None
         table = bigquery_client.update_table(view, ["description", "labels"])
         return table
