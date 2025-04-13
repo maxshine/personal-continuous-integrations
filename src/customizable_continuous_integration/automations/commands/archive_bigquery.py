@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   08/02/2025   Ryan, Gao       Initial creation
   28/03/2025   Ryan, Gao       Add default help argument
+  11/04/2025   Ryan, Gao       Strip trailing slash for gcs prefix and archive path
 """
 
 import argparse
@@ -66,6 +67,7 @@ def archive_command(cli_args: list[str]) -> None:
             archive_config["source_bigquery_dataset"] = args.archive_source_bigquery_dataset
         if args.archive_destination_gcs_prefix:
             archive_config["destination_gcs_prefix"] = args.archive_destination_gcs_prefix
+        archive_config["destination_gcs_prefix"] = archive_config["destination_gcs_prefix"].rstrip("/")
         _logger.info(f"Archiving task {archive_config.get('name', 'ad-hoc')} with config: {archive_config}")
         bigquery_dataset_config = {
             "project_id": archive_config["source_gcp_project_id"],
@@ -101,6 +103,7 @@ def restore_command(cli_args: list[str]) -> None:
             restore_config["destination_bigquery_dataset"] = args.restore_destination_bigquery_dataset
         if args.restore_source_gcs_archive:
             restore_config["source_gcs_archive"] = args.restore_source_gcs_archive
+        restore_config["source_gcs_archive"] = restore_config["source_gcs_archive"].rstrip("/")
         _logger.info(f"Restoring task {restore_config.get('name', 'ad-hoc')} with config: {restore_config}")
         with fsspec.open(f"{restore_config['source_gcs_archive']}/dataset.json") as f:
             bigquery_dataset_config = json.load(f)

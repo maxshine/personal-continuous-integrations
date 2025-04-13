@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
+  11/04/2025   Ryan, Gao       Add support for external table
 """
 
 import logging
@@ -17,6 +18,7 @@ import google.cloud.bigquery
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.base import BigqueryBaseArchiveEntity
 from customizable_continuous_integration.automations.bigquery_archiver.entity.dataset import BigqueryArchivedDatasetEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.external import BigqueryArchiveGenericExternalTableEntity
 from customizable_continuous_integration.automations.bigquery_archiver.entity.routine import (
     BigqueryArchiveFunctionEntity,
     BigqueryArchiveStoredProcedureEntity,
@@ -63,6 +65,7 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
             BigqueryArchiveFunctionEntity,
             BigqueryArchiveStoredProcedureEntity,
             BigqueryArchiveMaterializedViewEntity,
+            BigqueryArchiveGenericExternalTableEntity,
         )
         if type(entity) in supported_archive_entity_types:
             if self.archived_entity_metadata_version != entity.metadata_version:
@@ -87,6 +90,7 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         with ThreadPoolExecutor(max_workers=concurrency) as executor:
             for idx, table_entity in enumerate(
                 self.bigquery_archived_dataset_entity.tables
+                + self.bigquery_archived_dataset_entity.external_tables
                 + self.bigquery_archived_dataset_entity.user_define_functions
                 + self.bigquery_archived_dataset_entity.stored_procedures
             ):

@@ -5,6 +5,7 @@ import logging
 import google.cloud.bigquery
 
 from customizable_continuous_integration.automations.bigquery_archiver.entity.dataset import BigqueryArchivedDatasetEntity
+from customizable_continuous_integration.automations.bigquery_archiver.entity.external import BigqueryArchiveGenericExternalTableEntity
 from customizable_continuous_integration.automations.bigquery_archiver.entity.routine import (
     BigqueryArchiveFunctionEntity,
     BigqueryArchiveStoredProcedureEntity,
@@ -53,6 +54,9 @@ class FetchSourceBigqueryDatasetExecutor(BaseExecutor):
             elif type(entity) is BigqueryArchiveMaterializedViewEntity:
                 entity.fetch_self(self.bigquery_client)
                 self.bigquery_archived_dataset_entity.materialized_views.append(entity)
+            elif type(entity) is BigqueryArchiveGenericExternalTableEntity:
+                entity.fetch_self(self.bigquery_client)
+                self.bigquery_archived_dataset_entity.external_tables.append(entity)
             else:
                 self.logger.warning(f"{e.table_type} {e.table_id} is not supported")
         for e in self.bigquery_client.list_routines(dataset=ds):

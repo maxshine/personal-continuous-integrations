@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   08/02/2025   Ryan, Gao       Initial creation
+  11/04/2025   Ryan, Gao       Add range partitioning in BigqueryPartitionConfig
 """
 
 import google.cloud.bigquery
@@ -18,6 +19,8 @@ class BigqueryPartitionConfig(pydantic.BaseModel):
     partition_field: str
     partition_expiration_ms: int
     partition_require_filter: bool
+    partition_category: str = "TIME"
+    partition_range: list[int] = []
 
     def to_bigquery_time_partitioning(self) -> google.cloud.bigquery.table.TimePartitioning:
         return google.cloud.bigquery.table.TimePartitioning(
@@ -25,6 +28,14 @@ class BigqueryPartitionConfig(pydantic.BaseModel):
             field=self.partition_field,
             expiration_ms=self.partition_expiration_ms if self.partition_expiration_ms > 0 else None,
             require_partition_filter=self.partition_require_filter,
+        )
+
+    def to_bigquery_range_partitioning(self) -> google.cloud.bigquery.table.RangePartitioning:
+        return google.cloud.bigquery.table.RangePartitioning(
+            field=self.partition_field,
+            range_=google.cloud.bigquery.table.PartitionRange(
+                start=self.partition_range[0], end=self.partition_range[1], interval=self.partition_range[2]
+            ),
         )
 
 
