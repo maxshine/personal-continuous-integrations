@@ -1,5 +1,8 @@
 # The python package to archive Bigquery dataset into GCS bucket and restore it back
 
+## Detailed Change History
+[Change History of bigquery-archiver command](CHANGELOG.md)
+
 ## Python Design
 ### Archive / Restore task config
 A archive or restore task can be defined in a YAML file, which is an element of a list of tasks. Each task is a dictionary
@@ -37,7 +40,7 @@ Following table describes the common fields for both archive and restore task co
 | 4   | `attach_archive_ts_to_label`   | Boolean | When true, archie_ts string added as label; Default true; |
 | 5   | `skip_restore`                 | Dict    | When set, put true to entity names skip them in restore   |
 
-## Supported Bigquery Entities and their fields
+## Supported Bigquery Entities and their fields in use
 1. Table
    1. project_id
    2. dataset

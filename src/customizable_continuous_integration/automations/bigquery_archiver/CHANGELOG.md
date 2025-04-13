@@ -31,5 +31,6 @@ N/A
      - This field is defaulted to `true` and can be set to `false` to disable the attachment.
   2. Add `description` field in restored routine entities.
   3. Support external table entities in the archive and restore process.
+  4. Add checks over necessary config fields and exit with error if any missed.
 - Bugfix
   1. Strip tailing slash from GCS path in the archive and restore process.
