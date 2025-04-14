@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   11/04/2025   Ryan, Gao       Add support for external table
+  13/04/2025   Ryan, Gao       Support configurable statement replacements
 """
 
 import logging
@@ -41,7 +42,7 @@ class RestoreBigqueryDatasetExecutor(BaseExecutor):
         bigquery_client: google.cloud.bigquery.Client = None,
     ):
         self.bigquery_archived_dataset_entity = BigqueryArchivedDatasetEntity.model_validate(bigquery_archived_dataset_config)
-        self.bigquery_archived_dataset_entity.populate_sub_restore_info()
+        self.bigquery_archived_dataset_entity.populate_sub_restore_info(restore_config=restore_config)
         self.restore_config = restore_config
         if not logger:
             logger = logging.getLogger(__class__.__name__)

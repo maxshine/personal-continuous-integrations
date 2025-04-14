@@ -8,6 +8,7 @@ Revision History:
   23/02/2025   Ryan, Gao       Initial creation
   03/04/2025   Ryan, Gao       Set project in dataset gcs_prefix
   10/04/2025   Ryan, Gao       Add archive timestamp labels; Add skip_restore
+  13/04/2025   Ryan, Gao       Support configurable statement replacements
 """
 
 import datetime
@@ -226,6 +227,8 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             self.destination_bigquery_dataset and self.destination_bigquery_dataset != self.dataset
         ):
             replacement_mapping = {}
+            if kwargs:
+                replacement_mapping = kwargs.get("restore_config", {}).get("statement_replacement_mapping",{}).get("views",{})
             replacement_mapping[f"{self.project_id}.{self.dataset}"] = f"{self.destination_gcp_project_id}.{self.destination_bigquery_dataset}"
             replacement_mapping[f"{self.dataset}"] = f"{self.destination_bigquery_dataset}"
             modify_config = {"replacement_mapping": replacement_mapping}
@@ -238,7 +241,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
             for t in self.stored_procedures:
                 t.modify_self_query(modify_config)
 
-    def populate_sub_restore_info(self) -> typing.Any:
+    def populate_sub_restore_info(self, **kwargs) -> typing.Any:
         for t in self.tables:
             t.destination_gcp_project_id = self.destination_gcp_project_id
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
@@ -257,7 +260,7 @@ class BigqueryArchivedDatasetEntity(BigqueryBaseArchiveEntity):
         for t in self.stored_procedures:
             t.destination_gcp_project_id = self.destination_gcp_project_id
             t.destination_bigquery_dataset = self.destination_bigquery_dataset
-        self.modify_sub_entity_queries()
+        self.modify_sub_entity_queries(**kwargs)
         return None
 
     def load_self(self, bigquery_client: google.cloud.bigquery.client.Client = None) -> Self:
