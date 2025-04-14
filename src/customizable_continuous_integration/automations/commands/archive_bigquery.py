@@ -67,6 +67,13 @@ def archive_command(cli_args: list[str]) -> None:
             archive_config["source_bigquery_dataset"] = args.archive_source_bigquery_dataset
         if args.archive_destination_gcs_prefix:
             archive_config["destination_gcs_prefix"] = args.archive_destination_gcs_prefix
+        if (
+            not archive_config.get("source_gcp_project_id")
+            or not archive_config.get("source_bigquery_dataset")
+            or not archive_config.get("destination_gcs_prefix")
+        ):
+            _logger.error("Missing required parameters for archiving task")
+            exit(1)
         archive_config["destination_gcs_prefix"] = archive_config["destination_gcs_prefix"].rstrip("/")
         _logger.info(f"Archiving task {archive_config.get('name', 'ad-hoc')} with config: {archive_config}")
         bigquery_dataset_config = {
@@ -103,6 +110,9 @@ def restore_command(cli_args: list[str]) -> None:
             restore_config["destination_bigquery_dataset"] = args.restore_destination_bigquery_dataset
         if args.restore_source_gcs_archive:
             restore_config["source_gcs_archive"] = args.restore_source_gcs_archive
+        if not restore_config.get("source_gcs_archive"):
+            _logger.error("Missing required parameters for restoring task")
+            exit(1)
         restore_config["source_gcs_archive"] = restore_config["source_gcs_archive"].rstrip("/")
         _logger.info(f"Restoring task {restore_config.get('name', 'ad-hoc')} with config: {restore_config}")
         with fsspec.open(f"{restore_config['source_gcs_archive']}/dataset.json") as f:
