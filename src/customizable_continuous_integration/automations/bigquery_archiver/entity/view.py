@@ -110,7 +110,7 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
                 te_full_id = f"{te.catalog + '.' if te.catalog else ''}{te.db + '.' if te.db else ''}{te.name}"
                 if te_full_id == search_full_id:
                     te.replace(sqlglot.table(te.name, catalog=dst_catalog, db=dst_db, alias=te.alias))
-        self.defining_query = parsed_query.sql(dialect="bigquery")
+        self.defining_query = parsed_query.sql(dialect="bigquery", pretty=True)
 
 
 class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
@@ -211,4 +211,4 @@ class BigqueryArchiveMaterializedViewEntity(BigqueryBaseArchiveEntity):
                 te_full_id = f"{te.catalog + '.' if te.catalog else ''}{te.db + '.' if te.db else ''}{te.name}"
                 if te_full_id == search_full_id:
                     te.replace(sqlglot.table(dst_name, catalog=dst_catalog, db=dst_db, alias=te.alias))
-            self.mview_query = parsed_query.sql(dialect="bigquery")
+            self.mview_query = parsed_query.sql(dialect="bigquery", pretty=True)

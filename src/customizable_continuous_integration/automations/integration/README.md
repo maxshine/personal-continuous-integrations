@@ -1,5 +1,8 @@
 # The python package to host customizable test framework
 
+## Detailed Change History
+[Change History of integration-test action](/.github/actions/test-automation-docker-action/CHANGELOG.md)
+
 ## Python Design
 ### Test case definition
 A kind of test case is created as a python class, which is a subclass from the base class:

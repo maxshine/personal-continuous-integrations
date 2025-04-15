@@ -26,7 +26,7 @@ from customizable_continuous_integration.automations.bigquery_archiver.executor.
 def get_bigquery_archiver_logger(logger_name: str) -> logging.Logger:
     _logger = logging.getLogger(logger_name)
     logging_ch = logging.StreamHandler(sys.stdout)
-    logging_ch.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s %(lineno)s: %(message)s"))
+    logging_ch.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s %(filename)s-L%(lineno)s: %(message)s"))
     _logger.addHandler(logging_ch)
     _logger.setLevel(logging.INFO)
     return _logger
