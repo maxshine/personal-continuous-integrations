@@ -62,7 +62,11 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
                 partition_expiration_ms=0,
                 partition_require_filter=False,
                 partition_category="RANGE",
-                partition_range=[table.range_partitioning.range_.start, table.range_partitioning.range_.end, table.range_partitioning.range_.interval],
+                partition_range=[
+                    table.range_partitioning.range_.start,
+                    table.range_partitioning.range_.end,
+                    table.range_partitioning.range_.interval,
+                ],
             )
         self.partition_config = partition_config
 
@@ -72,6 +76,29 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         self.is_archived = True
         self.actual_archive_metadata_path = self.metadata_serialized_path
         self.actual_archive_data_path = self.data_serialized_path
+        data_format = (
+            archive_config.get("table_data_archive_format_mapping", {}).get(self.identity, None)
+            or archive_config.get("table_data_archive_format", "avro")
+        ).lower()
+        data_compression = (
+            archive_config.get("table_data_archive_compression_mapping", {}).get(self.identity, None)
+            or archive_config.get("table_data_archive_compression", "deflate")
+        ).lower()
+        if data_format == "parquet":
+            self.data_archive_format = google.cloud.bigquery.job.DestinationFormat.PARQUET
+        elif data_format == "csv":
+            self.data_archive_format = google.cloud.bigquery.job.DestinationFormat.CSV
+        else:
+            self.data_archive_format = google.cloud.bigquery.job.DestinationFormat.AVRO
+        if data_compression == "snappy":
+            self.data_compression = google.cloud.bigquery.job.Compression.SNAPPY
+        elif data_compression == "deflate":
+            self.data_compression = google.cloud.bigquery.job.Compression.DEFLATE
+        elif data_compression == "gzip":
+            self.data_compression = google.cloud.bigquery.job.Compression.GZIP
+        elif data_compression == "zstd":
+            self.data_compression = google.cloud.bigquery.job.Compression.ZSTD
+
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
         export_job = bigquery_client.extract_table(
@@ -113,9 +140,16 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
                 source_format=self.data_archive_format,
                 schema=[f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None,
                 destination_table_description=self.bigquery_metadata.description,
-                time_partitioning=(self.partition_config.to_bigquery_time_partitioning() if self.partition_config and self.partition_config.partition_category == "TIME" else None),
+                time_partitioning=(
+                    self.partition_config.to_bigquery_time_partitioning()
+                    if self.partition_config and self.partition_config.partition_category == "TIME"
+                    else None
+                ),
                 range_partitioning=(
-                    self.partition_config.to_bigquery_range_partitioning() if self.partition_config and self.partition_config.partition_category == "RANGE" else None),
+                    self.partition_config.to_bigquery_range_partitioning()
+                    if self.partition_config and self.partition_config.partition_category == "RANGE"
+                    else None
+                ),
                 use_avro_logical_types=True,
             ),
         )

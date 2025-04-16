@@ -58,7 +58,7 @@ class ArchiveSourceBigqueryDatasetExecutor(BaseExecutor):
             BigqueryArchiveGenericExternalTableEntity,
         )
         if type(entity) in supported_archive_entity_types:
-            entity.archive_self(self.bigquery_client)
+            entity.archive_self(self.bigquery_client, self.archive_config)
             return True
         self.logger.warning(f"{entity.identity} is not supported type {type(entity)}")
         return False
