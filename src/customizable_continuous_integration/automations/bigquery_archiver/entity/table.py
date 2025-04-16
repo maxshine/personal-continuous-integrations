@@ -13,8 +13,10 @@ Revision History:
 
 import json
 import typing
+from copy import deepcopy
 
 import fsspec
+import google.cloud.bigquery.enums
 import google.cloud.bigquery.table
 from typing_extensions import Self
 
@@ -135,9 +137,17 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
             return
         self.determine_data_archive_format_compression(restore_config)
         use_stage = (self.data_archive_format == google.cloud.bigquery.job.DestinationFormat.AVRO) and (
-            any([True if f.type.lower() == "datetime" else False for f in self.schema_fields])
+            any([True if f.type == google.cloud.bigquery.enums.SqlTypeNames.DATETIME.value else False for f in self.schema_fields])
         )
         stage_table_name = f"{self.destination_gcp_project_id or self.project_id}.{self.destination_bigquery_dataset or self.dataset}.temp_stg_load_{self.identity}_{self.archived_datetime_str}"
+        restore_table_schema = [f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else []
+        if use_stage:
+            restore_table_schema = []
+            saved_schema = deepcopy(self.schema_fields)
+            for s in saved_schema:
+                if s.type == google.cloud.bigquery.enums.SqlTypeNames.DATETIME.value:
+                    s.type = google.cloud.bigquery.enums.SqlTypeNames.STRING.value
+                restore_table_schema.append(s.to_bigquery_schema_field())
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
         load_job = bigquery_client.load_table_from_uri(
@@ -146,7 +156,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
             job_id_prefix=f"restore_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
             job_config=google.cloud.bigquery.job.LoadJobConfig(
                 source_format=self.data_archive_format,
-                schema=[f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields and not use_stage else None,
+                schema=restore_table_schema if self.schema_fields else None,
                 destination_table_description=self.bigquery_metadata.description,
                 time_partitioning=(
                     self.partition_config.to_bigquery_time_partitioning()
@@ -163,7 +173,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         )
         load_job.result()
         if use_stage:
-            datetime_fields = [f.name for f in self.schema_fields if f.type.lower() == "datetime"]
+            datetime_fields = [f.name for f in self.schema_fields if f.type == google.cloud.bigquery.enums.SqlTypeNames.DATETIME.value]
             cast_datetime_fields = [f"CAST({f} AS DATETIME) AS {f}" for f in datetime_fields]
             partition_clause = ""
             if self.partition_config and self.partition_config.partition_category == "TIME":
