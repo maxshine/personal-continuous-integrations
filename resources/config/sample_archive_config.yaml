@@ -2,8 +2,6 @@
   concurrency: 1
   task_type: archive
   continue_on_failure: true
-  table_data_archive_format: parquet
-  table_data_archive_compression: gzip
   source_gcp_project_id:
   source_bigquery_dataset:
   destination_gcs_prefix:

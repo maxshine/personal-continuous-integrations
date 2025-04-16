@@ -70,12 +70,7 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
             )
         self.partition_config = partition_config
 
-    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
-        if not bigquery_client:
-            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
-        self.is_archived = True
-        self.actual_archive_metadata_path = self.metadata_serialized_path
-        self.actual_archive_data_path = self.data_serialized_path
+    def determine_data_archive_format_compression(self, archive_config: dict) -> None:
         data_format = (
             archive_config.get("table_data_archive_format_mapping", {}).get(self.identity, None)
             or archive_config.get("table_data_archive_format", "avro")
@@ -98,6 +93,13 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
             self.data_compression = google.cloud.bigquery.job.Compression.GZIP
         elif data_compression == "zstd":
             self.data_compression = google.cloud.bigquery.job.Compression.ZSTD
+
+    def archive_self(self, bigquery_client: google.cloud.bigquery.client.Client = None, archive_config: dict = None) -> typing.Any:
+        if not bigquery_client:
+            bigquery_client = google.cloud.bigquery.Client(project=self.project_id)
+        self.is_archived = True
+        self.actual_archive_metadata_path = self.metadata_serialized_path
+        self.actual_archive_data_path = self.data_serialized_path
 
         with fsspec.open(self.metadata_serialized_path, "w") as f:
             f.write(self.model_dump_json(indent=2))
@@ -130,33 +132,53 @@ class BigqueryArchiveTableEntity(BigqueryBaseArchiveEntity):
         if restore_config.get("skip_restore", {}).get(self.identity, False):
             print(f"Skip restoring {self.entity_type} {fully_qualified_identity}")
             return
+        self.determine_data_archive_format_compression(restore_config)
+        use_stage = (self.data_archive_format == google.cloud.bigquery.job.DestinationFormat.AVRO) and (
+            any([True if f.type.lower() == "datetime" else False for f in self.schema_fields])
+        )
+        stage_table_name = f"{self.destination_gcp_project_id or self.project_id}.{self.destination_bigquery_dataset or self.dataset}.temp_stg_load_{self.identity}_{self.archived_datetime_str}"
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_table(fully_qualified_identity, not_found_ok=True)
         load_job = bigquery_client.load_table_from_uri(
             source_uris=f"{self.data_serialized_path}/*",
-            destination=fully_qualified_identity,
+            destination=stage_table_name if use_stage else fully_qualified_identity,
             job_id_prefix=f"restore_{self.bigquery_metadata.dataset}_{self.identity}_{self.archived_datetime_str}",
             job_config=google.cloud.bigquery.job.LoadJobConfig(
                 source_format=self.data_archive_format,
-                schema=[f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields else None,
+                schema=[f.to_bigquery_schema_field() for f in self.schema_fields] if self.schema_fields and not use_stage else None,
                 destination_table_description=self.bigquery_metadata.description,
                 time_partitioning=(
                     self.partition_config.to_bigquery_time_partitioning()
-                    if self.partition_config and self.partition_config.partition_category == "TIME"
+                    if self.partition_config and self.partition_config.partition_category == "TIME" and not use_stage
                     else None
                 ),
                 range_partitioning=(
                     self.partition_config.to_bigquery_range_partitioning()
-                    if self.partition_config and self.partition_config.partition_category == "RANGE"
+                    if self.partition_config and self.partition_config.partition_category == "RANGE" and not use_stage
                     else None
                 ),
                 use_avro_logical_types=True,
             ),
         )
         load_job.result()
+        if use_stage:
+            datetime_fields = [f.name for f in self.schema_fields if f.type.lower() == "datetime"]
+            cast_datetime_fields = [f"CAST({f} AS DATETIME) AS {f}" for f in datetime_fields]
+            partition_clause = ""
+            if self.partition_config and self.partition_config.partition_category == "TIME":
+                partition_clause = f"PARTITION BY {self.partition_config.partition_field}"
+            elif self.partition_config and self.partition_config.partition_category == "RANGE":
+                partition_clause = f"PARTITION BY RANGE_BUCKET({self.partition_config.partition_field}, GENERATE_ARRAY({self.partition_config.partition_range[0]}, {self.partition_config.partition_range[1]}, {self.partition_config.partition_range[2]}))"
+            create_sql = f"""
+                CREATE OR REPLACE TABLE `{self.fully_qualified_identity}` {partition_clause} AS
+                SELECT * except({",".join(datetime_fields)}), {",".join(cast_datetime_fields)} FROM `{stage_table_name}`
+                """
+            bigquery_client.query(create_sql).result()
+            bigquery_client.delete_table(f"{stage_table_name}", not_found_ok=True)
         table = bigquery_client.get_table(fully_qualified_identity)
         table.labels = self.bigquery_metadata.labels
+        table.description = self.bigquery_metadata.description
         if restore_config.get("attach_archive_ts_to_label", True):
             table.labels["archive_ts"] = self.archived_datetime_str
-        bigquery_client.update_table(table, ["labels"])
+        bigquery_client.update_table(table, ["labels", "description"])
         return table
