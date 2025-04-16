@@ -89,3 +89,9 @@ N/A
 N/A
 - Bugfix
 N/A
+
+### v1.4.3 (general release succeeding from v1.4.2 to latest codebase)
+- Features
+N/A
+- Bugfix
+N/A

@@ -34,3 +34,11 @@ N/A
   4. Add checks over necessary config fields and exit with error if any missed.
 - Bugfix
   1. Strip tailing slash from GCS path in the archive and restore process.
+
+### v1.4.3
+- Features
+  1. Workaround the issue of restoring AVRO datetime fields.
+    - reference: https://cloud.google.com/bigquery/docs/exporting-data#avro_export_details
+
+- Bugfix
+N/A

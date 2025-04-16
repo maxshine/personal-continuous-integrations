@@ -8,6 +8,7 @@ Revision History:
   23/02/2025   Ryan, Gao       Initial creation
   04/04/2025   Ryan, Gao       Set DEFLATE as default compression
   10/04/2025   Ryan, Gao       Add archive timestamp labels; Add skip_restore; Add range partitioning
+  16/04/2025   Ryan, Gao       AVRO DATETIME:https://cloud.google.com/bigquery/docs/exporting-data#avro_export_details
 """
 
 import json
