@@ -46,39 +46,35 @@ Following table describes the common fields for both archive and restore task co
    2. dataset
    3. description
    4. labels
-   5. tags
-   6. schema_fields
-   7. data_archive_format
-   8. data_compression
-   9. partition_config
+   5. schema_fields
+   6. data_archive_format
+   7. data_compression
+   8. partition_config
 2. Partitioned Table (implemented by `Table` entity)
    1. project_id
    2. dataset
    3. description
    4. labels
-   5. tags
-   6. schema_fields
-   7. data_archive_format
-   8. data_compression
-   9. partition_config 
+   5. schema_fields
+   6. data_archive_format
+   7. data_compression
+   8. partition_config
 3. View
    1. project_id
    2. dataset
    3. description
    4. labels
-   5. tags
-   6. schema_fields
-   7. defining_query
+   5. schema_fields
+   6. defining_query
 4. Materialized View
    1. project_id
    2. dataset
    3. description
    4. labels
-   5. tags
-   6. schema_fields
-   7. mview_query
-   8. enable_refresh
-   9. refresh_interval_seconds
+   5. schema_fields
+   6. mview_query
+   7. enable_refresh
+   8. refresh_interval_seconds
 5. Function
    1. project_id
    2. dataset
@@ -100,17 +96,15 @@ Following table describes the common fields for both archive and restore task co
    2. dataset
    3. description
    4. labels
-   5. tags
-   6. schema_fields
-   7. partition_config 
-   8. external_data_config
+   5. schema_fields
+   6. partition_config 
+   7. external_data_config
 
 ## Limitations
-1. The archive / restore leverage the user's GCP credentials to access the Bigquery and GCS resources. The user should have the necessary permissions to access the resources.
-2. While restoring the entities having interdependencies, the restoring process only check the completion of the previous task. In a case of failed requisites, the dependents will be restored anyway even if they are doomed to fail all the time.
-3. While restoring the entities having interdependencies, the built DAG assumes the interdependencies are one-way that Bigquery has checked this.
-4. When using `skip_restore`, be cautious it may break the DAG of view entities.
-5. Body updating is not yet implemented for functions and stored procedures.
+1. While restoring the entities having interdependencies, the restoring process only check the completion of the previous task. In a case of failed requisites, the dependents will be restored anyway even if they are doomed to fail all the time.
+2. When using `skip_restore`, be cautious it may break the DAG of view entities.
+3. Body updating is not yet implemented for functions and stored procedures.
+4. ~~AVRO datetime fields are limited to restore from files directly.~~ (RESOLVED by workaround in v1.4.3)
 
 ## Persistent data versioning
 ### metadata_version (used to track GCP Bigquery metadata changes)
