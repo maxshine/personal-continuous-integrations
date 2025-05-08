@@ -7,10 +7,10 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+**Describe the bug**  
 A clear and concise description of what the bug is.
 
-**Concerned Components**
+**Concerned Components**  
 - [ ] BigQuery Archiver
 - [ ] Integration Test
 - [ ] PR critical files protection
@@ -19,19 +19,20 @@ A clear and concise description of what the bug is.
 - [ ] Documentations
 - [ ] Others
 
-**To Reproduce**
+**To Reproduce**  
 Steps to reproduce the behavior (will be the best to attach the config and cli reproducing the issue):
 
-**Expected behavior**
+**Expected behavior**  
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
+**Screenshots**  
 If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. macOS / Windows / Linux]
  - Version
  - Python runtime information: [e.g. python version and dependencies]
+ - Impacted Releases: [1.3.0; 1.4.1]
 
-**Additional context**
+**Additional context**  
 Add any other context about the problem here.
