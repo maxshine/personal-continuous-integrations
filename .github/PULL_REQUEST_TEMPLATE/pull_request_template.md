@@ -6,7 +6,7 @@
 - [ ] I have performed a self-review of my code
 - [ ] If it is a core feature, I have done thorough tests.
 - [ ] Do I keep the documents up to date?
-- [ ] Will it introduce any breakage
+- [ ] Will it introduce any breakage?
 
 > [!NOTE]
 > Useful information that users should know, even when skimming content.
