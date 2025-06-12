@@ -69,17 +69,14 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
             return
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_routine(fully_qualified_identity, not_found_ok=True)
+        language_clause = {"JAVASCRIPT": "LANGUAGE js", "PYTHON": "LANGUAGE python"}.get(self.language, "")
+        left_syntax_delimiter = "r\"\"\"" if self.language != "SQL" else "("
+        right_syntax_delimiter = "\"\"\"" if self.language != "SQL" else ")"
         stmt = f"""CREATE FUNCTION `{fully_qualified_identity}`({", ".join([f"{arg['name']} {arg['data_type']}" for arg in self.arguments])})
                    RETURNS {self.return_type}
-                   {"LANGUAGE "+self.language if self.language != "SQL" else ""}
-                   AS ({self.body})
+                   {language_clause}
+                   AS {left_syntax_delimiter}{self.body}{right_syntax_delimiter}
                 """
-        if self.language == "JAVASCRIPT":
-            stmt = f"""CREATE FUNCTION `{fully_qualified_identity}`({", ".join([f"{arg['name']} {arg['data_type']}" for arg in self.arguments])})
-                       RETURNS {self.return_type}
-                       LANGUAGE js
-                       AS r\"\"\"{self.body} \"\"\"
-                    """
         job = bigquery_client.query(stmt)
         job.result()
         routine = bigquery_client.get_routine(fully_qualified_identity)
