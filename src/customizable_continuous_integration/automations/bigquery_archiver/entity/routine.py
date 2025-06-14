@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   23/02/2025   Ryan, Gao       Initial creation
   10/04/2025   Ryan, Gao       Add description field in the restore method; Add skip_restore
+  12/06/2025   Ryan, Gao       Add js function with STRUCT return type support
 """
 
 import typing
@@ -42,6 +43,10 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
         self.imported_libraries = routine.imported_libraries
         self.arguments = [{"name": arg.name, "data_type": arg.data_type.type_kind.value} for arg in routine.arguments]
         self.return_type = routine.return_type.type_kind.value
+        if self.return_type == "STRUCT":
+            self.return_type = (
+                f"STRUCT<{', '.join([f'{field.name} {field.type.type_kind.value}' for field in routine.return_type.struct_type.fields])}>"
+            )
         self.language = routine.language
         self.bigquery_metadata.description = routine.description
 
@@ -64,10 +69,13 @@ class BigqueryArchiveFunctionEntity(BigqueryBaseArchiveEntity):
             return
         if restore_config.get("overwrite_existing", False):
             bigquery_client.delete_routine(fully_qualified_identity, not_found_ok=True)
+        language_clause = {"JAVASCRIPT": "LANGUAGE js", "PYTHON": "LANGUAGE python"}.get(self.language, "")
+        left_syntax_delimiter = "r\"\"\"" if self.language != "SQL" else "("
+        right_syntax_delimiter = "\"\"\"" if self.language != "SQL" else ")"
         stmt = f"""CREATE FUNCTION `{fully_qualified_identity}`({", ".join([f"{arg['name']} {arg['data_type']}" for arg in self.arguments])})
                    RETURNS {self.return_type}
-                   {"LANGUAGE "+self.language if self.language != "SQL" else ""}
-                   AS ({self.body})
+                   {language_clause}
+                   AS {left_syntax_delimiter}{self.body}{right_syntax_delimiter}
                 """
         job = bigquery_client.query(stmt)
         job.result()
