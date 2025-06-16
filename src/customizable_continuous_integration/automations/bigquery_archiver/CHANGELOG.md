@@ -30,15 +30,18 @@ N/A
      - This field is used to attach the archive timestamp to the label of the archive.
      - This field is defaulted to `true` and can be set to `false` to disable the attachment.
   2. Add `description` field in restored routine entities.
-  3. Support external table entities in the archive and restore process.
+  3. Support external table entities in the process.
   4. Add checks over necessary config fields and exit with error if any missed.
 - Bugfix
-  1. Strip tailing slash from GCS path in the archive and restore process.
+  1. Strip tailing slash from the GCS path in the process.
 
 ### v1.4.3
 - Features
-  1. Workaround the issue of restoring AVRO datetime fields.
-    - reference: https://cloud.google.com/bigquery/docs/exporting-data#avro_export_details
+  1. Workaround the issue of restoring AVRO datetime fields. Reference: https://cloud.google.com/bigquery/docs/exporting-data#avro_export_details
+  2. Support JavaScript UDFs in the process.
+  3. Add a DDL script to generate a development dataset for testing purposes.
 
 - Bugfix
+  1. Fix the issue of routine references missing replacements in the view restoration process.
+
 N/A
