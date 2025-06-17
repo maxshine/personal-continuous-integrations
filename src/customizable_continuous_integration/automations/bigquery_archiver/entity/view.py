@@ -8,6 +8,7 @@ Revision History:
   23/02/2025   Ryan, Gao       Initial creation
   05/03/2025   Ryan, Gao       Use sqlparse to handle view query transformation
   10/04/2025   Ryan, Gao       Add archive timestamp to dataset labels; Add skip_restore
+  15/06/2025   Ryan, Gao       Fix restore logic to replace UDF in view query
 """
 
 import json
@@ -110,6 +111,11 @@ class BigqueryArchiveViewEntity(BigqueryBaseArchiveEntity):
                 te_full_id = f"{te.catalog + '.' if te.catalog else ''}{te.db + '.' if te.db else ''}{te.name}"
                 if te_full_id == search_full_id:
                     te.replace(sqlglot.table(te.name, catalog=dst_catalog, db=dst_db, alias=te.alias))
+            for te in parsed_query.find_all(sqlglot.exp.Anonymous):
+                search_full_ref = f"{src_catalog + '.' if src_catalog else ''}{src_db if src_db else ''}"
+                te_full_ref = te.parent.this.this if type(te.parent.this) is not str else ""
+                if te_full_ref == search_full_ref:
+                    te.parent.this.set(arg_key="this", value=f"{dst_catalog + '.' if dst_catalog else ''}{dst_db + '.' if dst_db else ''}")
         self.defining_query = parsed_query.sql(dialect="bigquery", pretty=True)
 
 
