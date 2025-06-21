@@ -10,6 +10,7 @@ Revision History:
   30/09/2024   Ryan, Gao       Add support to use repo admin
   04/10/2024   Ryan, Gao       Add maintainers into the admin list
   28/03/2025   Ryan, Gao       Add default help argument
+  21/06/2025   Ryan, Gao       Add variadic parameters
 """
 
 import argparse
@@ -73,7 +74,7 @@ def add_forked_repository(forked_repository_url, remote_name):
     cmd_output("git", "remote", "update", remote_name)
 
 
-def write_protection_command(cli_args: list[str]) -> None:
+def write_protection_command(cli_args: list[str], *args, **kargs) -> None:
     cmd = get_write_protection_script_path()
     args_parser = generate_arguments_parser()
     args = args_parser.parse_args(cli_args)
