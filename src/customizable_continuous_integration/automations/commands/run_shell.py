@@ -6,6 +6,7 @@ Revision History:
   Date         Author		   Comments
 ------------------------------------------------------------------------------
   04/09/2024   Ryan, Gao       Initial creation
+  21/06/2025   Ryan, Gao       Add variadic parameters
 """
 
 import logging
@@ -31,7 +32,7 @@ def split_command_str(cmd_str: str) -> list[str]:
     return raw_cmds
 
 
-def run_shell_commands(cli_args: list[str]) -> None:
+def run_shell_commands(cli_args: list[str], *args, **kargs) -> None:
     for cmd_str in cli_args:
         cmds = split_command_str(cmd_str)
         cmd, cmd_args = cmds[0], cmds[1:] if len(cmds) > 1 else []

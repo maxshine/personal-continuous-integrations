@@ -7,6 +7,7 @@ Revision History:
 ------------------------------------------------------------------------------
   03/09/2024   Ryan, Gao       Initial creation
   31/10/2024   Ryan, Gao       Refactor the input parameter automation-config-file
+  21/06/2025   Ryan, Gao       Add variadic parameters
 """
 
 import pathlib
@@ -18,7 +19,7 @@ from customizable_continuous_integration.automations.integration.executor import
 from customizable_continuous_integration.automations.integration.logging import _logger
 
 
-def integration_command(cli_args: list[str]) -> None:
+def integration_command(cli_args: list[str], *args, **kargs) -> None:
     args_parser = generate_arguments_parser()
     args = args_parser.parse_args(cli_args)
     if args.automation_config_file:
