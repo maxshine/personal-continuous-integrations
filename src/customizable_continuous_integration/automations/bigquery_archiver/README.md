@@ -12,7 +12,7 @@ An example of such config can be referred to:
 [restore sample config](/resources/config/sample_restore_config.yaml)
 
 ## Config Design
-Following table describes the common fields for both archive and restore task config.
+The following table describes the common fields for both archive and restore task config.
 
 | No. | Field                 | Type    | Description                                                                    |
 |:----|:----------------------|:--------|:-------------------------------------------------------------------------------|
@@ -109,9 +109,9 @@ Following table describes the common fields for both archive and restore task co
 ## Persistent data versioning
 ### metadata_version (used to track GCP Bigquery metadata changes)
 1. `v1`
-   1. introduced on 2025-02-23 and tested with GCP Bigquery by 2025-04-02
+   1. introduced in 2025-02-23 and tested with GCP Bigquery by 2025-04-02
    2. supported from archiver version 1.4.0
 ### archiver_version (used to track the archiver implementation changes)
-1. `v1` --  introduced on 2025-04-02 and tested with GCP Bigquery by 2025-04-02
-   1. introduced on 2025-02-23 and tested with GCP Bigquery by 2025-04-02
+1. `v1` -- introduced on 2025-04-02 and tested with GCP Bigquery by 2025-04-02
+   1. introduced in 2025-02-23 and tested with GCP Bigquery by 2025-04-02
    2. supported from archiver version 1.4.0

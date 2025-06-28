@@ -13,11 +13,11 @@ The test case class defines the actual test logic.
 A test case instance can be defined in the integration test config file by declaring the underlying test case class and 
 related test config. This means the test case classes are reusable across various test case instances with different 
 test configs associated.
-An example of such config can be referred to:
+An example of such a config can be referred to:
 [default integration config](/resources/config/integration_test.yaml)
 
 ## Config Design
-The integration file is a well formatted YAML file with following top level fields defined:
+The integration file is a well-formatted YAML file with the following top level fields defined:
 
 | No. | Field         | Type       | Description                                                                  |
 |:----|:--------------|:-----------|:-----------------------------------------------------------------------------|
@@ -31,7 +31,7 @@ Test entry value schema
 | 1   | `command`         | String     | A pre-defined value for users to access the test definition class                        |
 | 2   | `test_config`     | Dictionary | An mapping hosting test config, which is subject to the control of test definition class |
 | 3   | `throw_exception` | Boolean    | Whether let the test fail at any uncaught exceptions                                     |
-| 4   | `test_args`       | Any        | A feild of arbitrary type used by test definition class as arguments                     |
+| 4   | `test_args`       | Any        | A field of arbitrary type used by test definition class as arguments                     |
 
 ## Available Test Classes
 | No. | Test Name  | Description                                                                                                 |
