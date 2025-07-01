@@ -11,13 +11,13 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **Concerned Components**  
-- [] BigQuery Archiver
-- [] Integration Test
-- [] Pull request critical files protection
-- [] GitHub Actions
-- [] Pre-commits hooks
-- [] Documentations
-- [] Others
+- [ ] BigQuery Archiver
+- [ ] Integration Test
+- [ ] Pull request critical files protection
+- [ ] GitHub Actions
+- [ ] Pre-commits hooks
+- [ ] Documentations
+- [ ] Others
 
 **To Reproduce**  
 Steps to reproduce the behavior (will be the best to attach the config and cli reproducing the issue):
