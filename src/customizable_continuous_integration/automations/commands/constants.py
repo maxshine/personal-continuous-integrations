@@ -9,6 +9,7 @@ Revision History:
   08/02/2025   Ryan, Gao       Add archive and restore bigquery commands
   06/03/2025   Ryan, Gao       Add help command to show info
   28/03/2025   Ryan, Gao       Add default help command
+  21/06/2025   Ryan, Gao       Add variadic parameters to commands dictionary
 """
 
 import typing
@@ -19,10 +20,10 @@ from customizable_continuous_integration.automations.commands.run_shell import r
 from customizable_continuous_integration.automations.commands.write_protection_hook import write_protection_command
 from customizable_continuous_integration.common_libs.collections import ImmutableDictWrapper
 
-CLICommandHandlerType = typing.Callable[[list[str]], None]
+CLICommandHandlerType = typing.Callable[[list[str], list, dict], None]
 
 
-def not_implemented_command(cli_args: list[str]) -> None:
+def not_implemented_command(cli_args: list[str], *args, **kargs) -> None:
     raise NotImplementedError("This command is not implemented.")
 
 

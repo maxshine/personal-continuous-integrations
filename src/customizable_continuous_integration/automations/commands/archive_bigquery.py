@@ -8,6 +8,7 @@ Revision History:
   08/02/2025   Ryan, Gao       Initial creation
   28/03/2025   Ryan, Gao       Add default help argument
   11/04/2025   Ryan, Gao       Strip trailing slash for gcs prefix and archive path
+  21/06/2025   Ryan, Gao       Add variadic parameters
 """
 
 import argparse
@@ -50,7 +51,7 @@ def generate_restore_arguments_parser() -> argparse.ArgumentParser:
     return args_parser
 
 
-def archive_command(cli_args: list[str]) -> None:
+def archive_command(cli_args: list[str], *args, **kargs) -> None:
     _logger = get_bigquery_archiver_logger("bigquery_archive")
     args_parser = generate_archive_arguments_parser()
     args = args_parser.parse_args(cli_args)
@@ -93,7 +94,7 @@ def archive_command(cli_args: list[str]) -> None:
     exit(0)
 
 
-def restore_command(cli_args: list[str]) -> None:
+def restore_command(cli_args: list[str], *args, **kargs) -> None:
     _logger = get_bigquery_archiver_logger("bigquery_restore")
     args_parser = generate_restore_arguments_parser()
     args = args_parser.parse_args(cli_args)
