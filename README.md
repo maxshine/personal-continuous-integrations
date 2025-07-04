@@ -25,3 +25,8 @@
 
 ## Available CLI commands
 Refer to [the README](/src/customizable_continuous_integration/automations/commands/README.md) for more details.
+
+## Foundation Change History
+| No. | Version | Date       | Description                                |
+|:----|:--------|:-----------|:-------------------------------------------|
+| 1   | v1.4.3  | 2025-07-04 | Tested and Declared support of Python 3.12 |
