@@ -5,9 +5,9 @@
 
 ## Python Design
 ### Archive / Restore task config
-A archive or restore task can be defined in a YAML file, which is an element of a list of tasks. Each task is a dictionary
+An archive or restore task can be defined in a YAML file, which is an element of a list of tasks. Each task is a dictionary
 and processed by the python implementation
-An example of such config can be referred to:
+An example of such a config can be referred to:
 [archive sample config](/resources/config/sample_archive_config.yaml)
 [restore sample config](/resources/config/sample_restore_config.yaml)
 
@@ -101,7 +101,7 @@ The following table describes the common fields for both archive and restore tas
    7. external_data_config
 
 ## Limitations
-1. While restoring the entities having interdependencies, the restoring process only check the completion of the previous task. In a case of failed requisites, the dependents will be restored anyway even if they are doomed to fail all the time.
+1. While restoring the entities having interdependencies, the restoring process only checks the completion of the previous task. In a case of failed requisites, the dependents will be restored anyway even if they are doomed to fail all the time.
 2. When using `skip_restore`, be cautious it may break the DAG of view entities.
 3. Body updating is not yet implemented for functions and stored procedures.
 4. ~~AVRO datetime fields are limited to restore from files directly.~~ (RESOLVED by workaround in v1.4.3)
@@ -112,6 +112,6 @@ The following table describes the common fields for both archive and restore tas
    1. introduced in 2025-02-23 and tested with GCP Bigquery by 2025-04-02
    2. supported from archiver version 1.4.0
 ### archiver_version (used to track the archiver implementation changes)
-1. `v1` -- introduced on 2025-04-02 and tested with GCP Bigquery by 2025-04-02
+1. `v1`
    1. introduced in 2025-02-23 and tested with GCP Bigquery by 2025-04-02
    2. supported from archiver version 1.4.0
