@@ -92,6 +92,6 @@ N/A
 
 ### v1.4.3 (general release succeeding from v1.4.2 to latest codebase)
 - Features
-N/A
+1. Upgrade to Python 3.12
 - Bugfix
 N/A
