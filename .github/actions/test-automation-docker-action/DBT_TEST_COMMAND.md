@@ -16,4 +16,4 @@
 
 #### Supported DB vendor adapters by default
 1. BigQuery ~= 1.8.2 (since v1.3.0 till v1.4.2)
-2BigQuery ~= 1.10.4 (since v1.4.3)
+2. BigQuery ~= 1.10.4 (since v1.4.3)
