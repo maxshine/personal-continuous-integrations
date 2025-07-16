@@ -50,7 +50,7 @@ def activate_venv_info(venv_path: str, venv_config: dict[str, typing.Any]) -> di
         for r in venv_config.get("requirements", []):
             _logger.info(f"Installing {r}")
             f.write(f"{r}\n")
-    ret = pip_main(["install", "--ignore-installed", "--requirement", temp_req_file])
+    ret = pip_main(["install", "--require-virtualenv", "--ignore-installed", "--requirement", temp_req_file])
     if ret != 0:
         _logger.error(f"Failed to install {r} in virtual environment {venv_path}")
         raise RuntimeError(f"Failed to install {r} in virtual environment {venv_path}")
