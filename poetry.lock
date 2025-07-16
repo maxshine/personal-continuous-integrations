@@ -1254,7 +1254,7 @@ google-auth = ">=2.14.1,<3.0.dev0"
 googleapis-common-protos = ">=1.56.2,<2.0.dev0"
 grpcio = [
     {version = ">=1.49.1,<2.0dev", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
-    {version = ">=1.33.2,<2.0dev", optional = true, markers = "python_version < \"3.11\" and extra == \"grpc\""},
+    {version = ">=1.33.2,<2.0dev", optional = true, markers = "extra == \"grpc\""},
 ]
 grpcio-status = [
     {version = ">=1.49.1,<2.0.dev0", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
@@ -1388,7 +1388,7 @@ google-cloud-core = ">=2.4.1,<3.0.0dev"
 google-resumable-media = ">=2.0.0,<3.0dev"
 grpcio = [
     {version = ">=1.49.1,<2.0dev", optional = true, markers = "python_version >= \"3.11\" and extra == \"pandas\""},
-    {version = ">=1.47.0,<2.0dev", optional = true, markers = "extra == \"pandas\""},
+    {version = ">=1.47.0,<2.0dev", optional = true, markers = "python_version < \"3.11\" and extra == \"pandas\""},
 ]
 packaging = ">=20.0.0"
 pandas = {version = ">=1.1.0", optional = true, markers = "extra == \"pandas\""}
@@ -4403,4 +4403,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10.0,<3.13"
-content-hash = "d2bda3af829a2136a1f2dfba272655c60fe9a156d2cb911e2538b372297447b2"
+content-hash = "21d77a52fdaf4069b71670ae502b17389c37cb714cfae12574248b0b2e858a5e"

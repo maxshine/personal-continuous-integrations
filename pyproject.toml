@@ -42,8 +42,8 @@ line_length = 150
 #############################
 [tool.poetry.dependencies]
 python = ">=3.10.0,<3.13"
-dbt-core = "~1.10.4"
-dbt-bigquery = "~1.10.0"
+dbt-core = "<=1.10.4"
+dbt-bigquery = "<=1.10.0"
 gitpython = "~3.1.43"
 retrying = "~1.3.4"
 numpy = "<2.0.0"
