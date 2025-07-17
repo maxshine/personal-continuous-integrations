@@ -9,6 +9,7 @@ Revision History:
   31/10/2024   Ryan, Gao       Refactor the config schema with `automations` field
   04/11/2024   Ryan, Gao       refactor the name of `automation_config` and `automation_args`
   09/11/2024   Ryan, Gao       fix the false positive when `continue_on_failure`
+  14/07/2025   Ryan, Gao       Add return code in test command execution
 """
 
 import os
@@ -18,6 +19,9 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from customizable_continuous_integration.automations.integration.logging import _logger
 from customizable_continuous_integration.automations.integration.test_commands.constants import SentinelCommand, retrieve_test_command
+
+SUCCESS = 0
+TEST_FAILED = 1
 
 
 def is_github_environment() -> bool:
@@ -56,7 +60,7 @@ def execute_command_worker(worker_id: int, test_name: str, command_config: dict[
     return do_execute_command(test_name=test_name, command_config=command_config, continue_on_failure=continue_on_failure)
 
 
-def execute_commands_in_process(integration_test_config: dict[typing.Any, typing.Any]) -> None:
+def execute_commands_in_process(integration_test_config: dict[typing.Any, typing.Any]) -> int:
     configured_tests = integration_test_config.get("automations", [])
     continue_on_failure = integration_test_config.get("continue_on_failure", False)
     concurrency = integration_test_config.get("concurrency", 1)
@@ -78,17 +82,18 @@ def execute_commands_in_process(integration_test_config: dict[typing.Any, typing
                 else:
                     _logger.error(f"{test_name} FAILED: {ret_msg}, execution will be stopped")
                     executor.shutdown(wait=False, cancel_futures=True)
-                    exit(1)
+                    return TEST_FAILED
             except Exception as e:
                 _logger.error(f"{test_name} FAILED with exception: {e}, execution will be stopped")
                 executor.shutdown(wait=False, cancel_futures=True)
-                exit(1)
+                return TEST_FAILED
     if failed_tasks_results:
         _logger.error(f"These automations FAILED: {list(failed_tasks_results.keys())}")
-        exit(1)
+        return TEST_FAILED
+    return SUCCESS
 
 
-def execute_commands_in_serial(integration_test_config: dict[typing.Any, typing.Any]) -> None:
+def execute_commands_in_serial(integration_test_config: dict[typing.Any, typing.Any]) -> int:
     configured_tests = integration_test_config.get("automations", [])
     continue_on_failure = integration_test_config.get("continue_on_failure", False)
     failed_tasks_results = {}
@@ -102,8 +107,9 @@ def execute_commands_in_serial(integration_test_config: dict[typing.Any, typing.
             failed_tasks_results[test_name] = (ret, ret_msg)
         else:
             _logger.error(f"{test_name} FAILED: {ret_msg}")
-            exit(1)
+            return TEST_FAILED
         prepare_test_environment()
     if failed_tasks_results:
         _logger.error(f"These automations FAILED: {list(failed_tasks_results.keys())}")
-        exit(1)
+        return TEST_FAILED
+    return SUCCESS

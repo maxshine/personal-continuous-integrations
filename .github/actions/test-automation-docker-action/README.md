@@ -1,8 +1,8 @@
 ## This is an action to run configured test automations
 
 ### Features
-1. A integration test framework supports declarative test cases plus corresponding test configs
-2. The action can run the declared test cases based a single input config file
+1. An integration test framework supports declarative test cases plus corresponding test configs
+2. The action can run the declared test cases based on a single input config file
 
 ### Synopsis in Workflow
 TBD

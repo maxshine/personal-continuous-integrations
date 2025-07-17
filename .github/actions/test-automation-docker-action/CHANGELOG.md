@@ -57,5 +57,6 @@ N/A
 ### v1.4.3 (general release succeeding from v1.4.2 to latest codebase)
 - Features
 1. Upgrade to Python 3.12
+2. Upgrade to DBT Core 1.10.4 with Bigquery adapter 1.10.2
 - Bugfix
 N/A
