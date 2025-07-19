@@ -34,6 +34,6 @@ Test entry value schema
 | 4   | `test_args`       | Any        | A field of arbitrary type used by test definition class as arguments                     |
 
 ## Available Test Classes
-| No. | Test Name  | Description                                                                                                 |
-|:----|:-----------|:------------------------------------------------------------------------------------------------------------|
-| 1   | `dbt_test` | Run `dbt test` over a list of configured DBT projects pointed by the relative paths to this repository root |
+| No. | Test Name  | Description                                                                                                                                               |
+|:----|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1   | `dbt_test` | Run DBT command over a list of configured DBT projects. Refer to [DBT_TEST_COMMAND.md](/.github/actions/test-automation-docker-action/DBT_TEST_COMMAND.md)|

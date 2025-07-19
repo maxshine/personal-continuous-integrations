@@ -15,4 +15,5 @@
 | 6   | build_before_test | Boolean        | A flag to control whether run models before executing any test cases                       |
 
 #### Supported DB vendor adapters by default
-1. BigQuery ~= 1.8.2 (since v1.3.0)
+1. BigQuery ~= 1.8.2 (since v1.3.0 till v1.4.2)
+2. BigQuery ~= 1.10.0 (since v1.4.3)
