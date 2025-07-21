@@ -1,14 +1,13 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: "[Bug Report][Component Name] Description Here"
-labels: 'bug'
+name: Security report
+about: Create a report to help us improve on aspect of security
+title: "[Security Report][Component Name] Description Here"
+labels: 'security'
 assignees: ''
-
 ---
 
 **Describe the bug**  
-A clear and concise description of what the bug is.
+A clear and concise description of what the security vulnerability is.
 
 **Concerned Components**  
 - [ ] BigQuery Archiver
@@ -16,13 +15,13 @@ A clear and concise description of what the bug is.
 - [ ] Pull request critical files protection
 - [ ] GitHub Actions
 - [ ] Pre-commits hooks
-- [ ] Documentations
+- [ ] Python Foundation
 - [ ] Others
 
-**To Reproduce**  
+**Security Issue Description**  
 Steps to reproduce the behavior (will be the best to attach the config and cli reproducing the issue):
 
-**Expected behavior**  
+**Suggested Enhancement If Available**  
 A clear and concise description of what you expected to happen.
 
 **Screenshots**  

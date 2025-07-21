@@ -1,7 +1,7 @@
 ## This is an action to run against a GITHUB pull request, force a workflow fail if a pull request attempts to modify a protected file.
 
 ### Features
-1. Basically, check any specified files get changed by un-privileged users in a pull request.
+1. Basically, check any specified files get changed by unprivileged users in a pull request.
 2. The target files can be specified via a Python styled RegEx in the`include-filter` and
    a fine inclusion can be done via the another `exclude-filter` RegEx to exclude some exceptional files
 3. It supports the cross-forks check when `forked-repository-url` specified the forked repository and
@@ -11,6 +11,13 @@
    to enhance the check security from users adding unwanted ones into the `admin-list`, the action can be
    instructed to get `maintain` and `admin` roles collaborators from the host repository. This is activated
    when both `github-access-token` and `github-repository-name` are specified.
+
+> [!CAUTION]
+> This action is only designed to be used in a pull request workflow, and it will fail the workflow if the PR contains 
+> protected files, but the PR is created by an unprivileged user.
+> This action DOES NOT check the actual author of every commit in the pull request. However, it only redeems the author of the 
+> pull request itself as the author of all changes, which is available from `github.actor` in the workflow context.
+> The philosophy is that the pull request is created by a user, and the user should be responsible for all changes in the pull request.
 
 ### Synopsis in Workflow
 The example shows how to use this action to protect files under `.ci` and `.github` directories
