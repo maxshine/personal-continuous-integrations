@@ -60,3 +60,9 @@ N/A
 2. Upgrade to DBT Core 1.10.4 with Bigquery adapter 1.10.2
 - Bugfix
 N/A
+
+### v1.4.4 (general release succeeding from v1.4.3 to latest codebase)
+- Features
+1. Use [uv](https://github.com/astral-sh/uv) as package installer to speed up runtime building up.
+- Bugfix
+N/A
