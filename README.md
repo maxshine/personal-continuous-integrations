@@ -27,6 +27,7 @@
 Refer to [the README](/src/customizable_continuous_integration/automations/commands/README.md) for more details.
 
 ## Foundation Change History
-| No. | Version | Date       | Description                                |
-|:----|:--------|:-----------|:-------------------------------------------|
-| 1   | v1.4.3  | 2025-07-04 | Tested and Declared support of Python 3.12 |
+| No. | Version | Date       | Description                                                                  |
+|:----|:--------|:-----------|:-----------------------------------------------------------------------------|
+| 1   | v1.4.3  | 2025-07-04 | Tested and Declared support of Python 3.12                                   |
+| 2   | v1.4.4  | 2025-10-10 | Compatible with poetry and uv dependency managing tools; Requires poetry v2+ |

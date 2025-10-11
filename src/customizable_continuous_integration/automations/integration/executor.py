@@ -97,7 +97,10 @@ def execute_commands_in_serial(integration_test_config: dict[typing.Any, typing.
     configured_tests = integration_test_config.get("automations", [])
     continue_on_failure = integration_test_config.get("continue_on_failure", False)
     failed_tasks_results = {}
+    cwd = os.getcwd()
     for test_name in configured_tests:
+        _logger.info(f"Starting test {test_name} from working directory {cwd}")
+        os.chdir(cwd)
         command_config = configured_tests[test_name]
         ret, ret_msg = do_execute_command(test_name=test_name, command_config=command_config, continue_on_failure=continue_on_failure)
         if ret:

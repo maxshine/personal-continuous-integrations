@@ -1,16 +1,23 @@
 concurrency: 1
-continue_on_failure: false
+continue_on_failure: true
+virtual_environment:
+  keep_virtual_environment: false
+  requirements: []
 automations:
-  general_dbt_test:
+  food_sow_dbt_test:
     command: dbt_test
     automation_config:
-      build_before_test: true
       target_projects:
-        - "default/offer_attachment_customizable"
-      dbt_variable:
-        var_1: value_1
-      dbt_dependency:
-        - package: dbt-labs/dbt_utils
-          version: 1.3.0
+        - "pillars"
     throw_exception: true
-    automation_args:
+    test_args:
+      - "--select=tag:food_sow"
+      - "--target=dev"
+  engagement_dbt_test:
+    command: dbt_test
+    automation_config:
+      target_projects:
+        - "pillars"
+    throw_exception: true
+    test_args:
+      - "--select=tag:egmt_shop_online"
