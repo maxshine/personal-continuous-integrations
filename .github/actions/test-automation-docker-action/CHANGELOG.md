@@ -42,27 +42,27 @@ N/A
 - Dependencies
   1. DBT Core version 1.8.5 with Bigquery adapter 1.8.2
 
-### v1.4.1 (general release succeeding from v1.3.4 to latest codebase)
+### v1.4.1 (collateral release succeeding from v1.3.4 to latest codebase)
 - Features
 N/A
 - Bugfix
 N/A
 
-### v1.4.2 (general release succeeding from v1.4.1 to latest codebase)
+### v1.4.2 (collateral release succeeding from v1.4.1 to latest codebase)
 - Features
 N/A
 - Bugfix
 N/A
 
-### v1.4.3 (general release succeeding from v1.4.2 to latest codebase)
+### v1.4.3 (feature release succeeding from v1.4.2)
 - Features
 1. Upgrade to Python 3.12
 2. Upgrade to DBT Core 1.10.4 with Bigquery adapter 1.10.2
 - Bugfix
 N/A
 
-### v1.4.4 (general release succeeding from v1.4.3 to latest codebase)
+### v1.4.4 (feature & bugfix release succeeding from v1.4.3)
 - Features
 1. Use [uv](https://github.com/astral-sh/uv) as package installer to speed up runtime building up.
 - Bugfix
-N/A
+1. When multiple tests defined in the row, make sure all tests are executed from the same working directory.

@@ -16,12 +16,13 @@
 Available from **v1.3.0**.
 Deprecated from *N/A*.
 #### Version History
-| No. | Version | Features                                                                                                                         | Bugfixes  |
-|:----|:--------|:---------------------------------------------------------------------------------------------------------------------------------|:----------|
-| 1   | v1.3.0  | - Initial version of test command running `dbt test`                                                                             | N/A       |
-| 2   | v1.3.3  | - Support DBT configs in the config for `dbt_test` command                                                                       | N/A       |
-| 3   | v1.3.4  | - Support DBT profiles in the config for `dbt_test` command<br> - Support running models before testing with `build_before_test` | N/A       |
-| 4   | v1.4.0  | - add `-h` and `--help` argument to show command usage                                                                           | N/A       |
+| No. | Version | Features                                                                                                                         | Bugfixes                                                  |
+|:----|:--------|:---------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------|
+| 1   | v1.3.0  | - Initial version of test command running `dbt test`                                                                             | N/A                                                       |
+| 2   | v1.3.3  | - Support DBT configs in the config for `dbt_test` command                                                                       | N/A                                                       |
+| 3   | v1.3.4  | - Support DBT profiles in the config for `dbt_test` command<br> - Support running models before testing with `build_before_test` | N/A                                                       |
+| 4   | v1.4.0  | - add `-h` and `--help` argument to show command usage                                                                           | N/A                                                       |
+| 4   | v1.4.4  | N/A                                                                                                                              | - Make sure tests are run from the same working directory |
 
 
 ### run-shell
