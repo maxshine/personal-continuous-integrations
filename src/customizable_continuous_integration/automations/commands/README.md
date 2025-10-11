@@ -1,14 +1,14 @@
 # The python package to host user-interface CLI
 
 ## Available Commands
-| No. | Field              | Starting Version | Description                                               | Reference         |
-|:----|:-------------------|:-----------------|:----------------------------------------------------------|-------------------|
-| 1   | `integration-test` | v1.3.0           | Run the integration test suite defined in the config file | [the README](/src/customizable_continuous_integration/automations/integration/README.md) |
-| 2   | `run-shell`        | v1.0.0           | Run arbitrary Unix command in the Bash shell              | N/A               |
-| 3   | `write-protection` | v1.0.0           | Check the protected files in a GIT difference             | N/A               |
-| 4   | `archive-bigquery` | v1.4.0           | Archive a Bigquery dataset into GCS                       | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
-| 5   | `restore-bigquery` | v1.4.0           | Restore a Bigquery dataset from GCS archive               | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
-| 6   | `help`             | v1.4.0           | Show available function sub-commands                      | N/A               |
+| No. | Field              | Debut Version | Description                                               | Reference         |
+|:----|:-------------------|:--------------|:----------------------------------------------------------|-------------------|
+| 1   | `integration-test` | v1.3.0        | Run the integration test suite defined in the config file | [the README](/src/customizable_continuous_integration/automations/integration/README.md) |
+| 2   | `run-shell`        | v1.0.0        | Run arbitrary Unix command in the Bash shell              | N/A               |
+| 3   | `write-protection` | v1.0.0        | Check the protected files in a GIT difference             | N/A               |
+| 4   | `archive-bigquery` | v1.4.0        | Archive a Bigquery dataset into GCS                       | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
+| 5   | `restore-bigquery` | v1.4.0        | Restore a Bigquery dataset from GCS archive               | [the README](/src/customizable_continuous_integration/automations/bigquery_archiver/README.md) |
+| 6   | `help`             | v1.4.0        | Show available function sub-commands                      | N/A               |
 
 
 ## Commands Release History
