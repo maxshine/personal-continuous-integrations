@@ -12,6 +12,7 @@
      4. materialized view
      5. function
      6. stored procedure
+- Bugfix
 N/A
 
 ### v1.4.1
@@ -20,7 +21,6 @@ N/A
      - This field is used to identify the version of the archiver that created the archive.
      - This field is useful for future compatibility and can be used to determine if the archive can be restored by the current version of the archiver.
   2. Set `DEFLATE` compression for the archive for better storage efficiency.
-
 - Bugfix
 N/A
 
@@ -40,8 +40,11 @@ N/A
   1. Workaround the issue of restoring AVRO datetime fields. Reference: https://cloud.google.com/bigquery/docs/exporting-data#avro_export_details
   2. Support JavaScript UDFs in the process.
   3. Add a DDL script to generate a development dataset for testing purposes.
-
 - Bugfix
   1. Fix the issue of routine references missing replacements in the view restoration process.
 
+### v1.4.4 (collateral release from v1.4.3 to latest codebase)
+- Features
+N/A
+- Bugfix
 N/A
