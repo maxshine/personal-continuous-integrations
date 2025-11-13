@@ -10,6 +10,7 @@
 # -----------------------------------------------------------------------------
 #   01/09/2024     Ryan, Gao       Created this script
 #   03/09/2024     Ryan, Gao       Add more cmdline options preceding env
+#   13/11/2025     Ryan, Gao       Add more debugging output
 #
 # Inputs:
 #   Environmental Variables:
@@ -135,11 +136,11 @@ while :; do
   ;;
   esac
 done
-echo "GITHUB_SOURCE_REF=${GITHUB_SOURCE_REF}"
-echo "GITHUB_TARGET_REF=${GITHUB_TARGET_REF}"
-echo "GITHUB_ACTING_USER=${GITHUB_ACTING_USER}"
-echo "IS_FORKED_PULL_REQUEST=${IS_FORKED_PULL_REQUEST}"
-echo "ADMINISTRATIVE_USERS=${ADMINISTRATIVE_USERS}"
+printf "GITHUB_SOURCE_REF=%s\n" ${GITHUB_SOURCE_REF}
+printf "GITHUB_TARGET_REF=%s\n" ${GITHUB_TARGET_REF}
+printf "GITHUB_ACTING_USER=%s\n" ${GITHUB_ACTING_USER}
+printf "IS_FORKED_PULL_REQUEST=%s\n" ${IS_FORKED_PULL_REQUEST}
+printf "ADMINISTRATIVE_USERS=%s\n" ${ADMINISTRATIVE_USERS}
 printf "admin_list=%s\n" $ADMINISTRATIVE_USERS
 
 # Check GITHUB runtime
