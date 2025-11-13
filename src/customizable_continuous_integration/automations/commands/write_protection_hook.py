@@ -107,8 +107,8 @@ def write_protection_command(cli_args: list[str], *args, **kargs) -> None:
     except CalledProcessError:
         cmd_output("git", "config", "--global", "--add", "safe.directory", os.getcwd())
         git_files = list(filter_by_include_exclude(get_all_files(), args.include_filter, args.exclude_filter))
-    _logger.info("Debugging...")
-    _logger.info(", ".join(git_files))
+    _logger.info("Retrieved administrator list: ", admin_list)
+    _logger.info("Detect files in scope: \n\t", "\t\n".join(git_files))
     if git_files:
         ret_code, std_out = run_xargs(cmd=(cmd, *cmd_args), file_args=git_files, require_serial=True, color=False)
         print(str(std_out, encoding="ascii"))
