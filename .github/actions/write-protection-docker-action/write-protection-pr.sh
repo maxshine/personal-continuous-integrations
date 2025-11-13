@@ -135,6 +135,11 @@ while :; do
   ;;
   esac
 done
+echo $GITHUB_SOURCE_REF
+echo $GITHUB_TARGET_REF
+echo $GITHUB_ACTING_USER
+echo $IS_FORKED_PULL_REQUEST
+echo $ADMINISTRATIVE_USERS
 printf "admin_list=%s\n" $ADMINISTRATIVE_USERS
 
 # Check GITHUB runtime
