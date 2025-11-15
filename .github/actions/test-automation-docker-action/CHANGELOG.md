@@ -32,3 +32,9 @@ N/A
 2. Support running models before testing with the config field `build_before_test`
 - Bugfix
 N/A
+
+### v1.3.5 (collateral release succeeding from v1.3.4)
+- Features
+N/A
+- Bugfix
+N/A
