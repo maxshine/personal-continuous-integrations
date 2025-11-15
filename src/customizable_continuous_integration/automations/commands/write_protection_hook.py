@@ -9,6 +9,7 @@ Revision History:
   17/09/2024   Ryan, Gao       Add cross-forks check
   30/09/2024   Ryan, Gao       Add support to use repo admin
   04/10/2024   Ryan, Gao       Add maintainers into the admin list
+  16/11/2025   Ryan, Gao       Add more debugging logs
 """
 
 import argparse
