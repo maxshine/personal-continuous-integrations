@@ -46,7 +46,7 @@ N/A
 - Bugfix
   1. Fetch `maintain` role collaborators instead of `admin`, which will still include the `admin collaborators
 
-### v1.2.2 (feature release succeeding from v1.2.1)
+### v1.2.2 (bugfix release succeeding from v1.2.1)
 - Features  
 N/A
 
