@@ -12,6 +12,17 @@
    instructed to get `maintain` and `admin` roles collaborators from the host repository. This is activated
    when both `github-access-token` and `github-repository-name` are specified.
 
+> [!CAUTION]
+> This action is only designed to be used in a pull request workflow, and it will fail the workflow even if the PR contains 
+> modifications by authorized users against protected files, but the PR is created by an unprivileged user.  
+> This action DOES NOT check the actual author of every commit in the pull request. However, it only deems the author of the 
+> pull request itself as the author of all changes, which is available from `github.actor` in the workflow context.  
+> The philosophy is that the pull request is created by a user, and the user should be responsible for all changes in the pull request.
+
+> [!NOTE]  
+> Additions of files are not in the scope of check, which means if a protected file is added newly in a pull request,
+> the action will NOT block the pull request even if the author is unprivileged.
+
 ### Synopsis in Workflow
 The example shows how to use this action to protect files under `.ci` and `.github` directories
 The trusted admins will be listed via repository maintain and admin roles

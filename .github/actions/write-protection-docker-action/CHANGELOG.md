@@ -14,7 +14,7 @@
      4. `admin-list`: Optional. A semicolon separated GitHub users, who can bypass this check. e.g. `user-a;user-b`.
      5. `include-filter`: Optional. A regex string to filter which files should be checked. If omitted, NO files are checked
      6. `exclude-filter`: Optional. A regex string to filter which files should be skipped from the result of `include-filter`
-- Bugfix
+- Bugfix  
 N/A
 
 ### v1.1.0
@@ -25,7 +25,7 @@ N/A
         the difference of critical files between the current repository and thr forked repository.
   2. When the parameter `forked-repository-url` is omitted, then the check will do branches-based check by default
 
-- Bugfix
+- Bugfix  
 N/A
 
 ### v1.2.0
@@ -37,43 +37,48 @@ N/A
   2. When the two parameters of `github-access-token` and `github-repository-name` are set, the check will fetch the 
      collaborators with `admin` role from the target repository and append them after `admin_list`.
 
-- Bugfix
+- Bugfix  
 N/A
 
 ### v1.2.1 (bugfix release succeeding from v1.2.0)
-- Features
+- Features  
 N/A
-
 - Bugfix
   1. Fetch `maintain` role collaborators instead of `admin`, which will still include the `admin collaborators
 
 ### v1.3.0
-- Features
+- Features  
 N/A
-- Bugfix
+- Bugfix  
 N/A
 
 ### v1.3.1 (bugfix release succeeding from v1.3.0)
-- Features
+- Features  
 N/A
-
 - Bugfix
   1. Fetch `maintain` role collaborators instead of `admin`, which will still include the `admin collaborators
 
 ### v1.3.2 (bugfix release succeeding from v1.3.1)
-- Features
+- Features  
 N/A
-- Bugfix
+- Bugfix  
 N/A
 
 ### v1.3.3 (feature release succeeding from v1.3.2)
-- Features
+- Features  
 N/A
-- Bugfix
+- Bugfix  
 N/A
 
 ### v1.3.4 (feature release succeeding from v1.3.2)
-- Features
+- Features  
 N/A
+- Bugfix  
+N/A
+
+### v1.3.5 (bugfix release succeeding from v1.3.4)
+- Features  
+N/A
+
 - Bugfix
-N/A
+  1. Add debugging outputs to clearly show the case when no files are included for check due to the `include-filter`  
