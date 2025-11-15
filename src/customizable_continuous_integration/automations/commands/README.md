@@ -43,8 +43,10 @@ Deprecated from *N/A*.
 | 2   | v1.1.0  | - Support checking across forked repositories with `forked-repository-url`           | N/A                                                     |
 | 3   | v1.2.0  | - Support administrative users config via collaborator roles (admin and above)       | N/A                                                     |
 | 4   | v1.2.1  | N/A                                                                                  | - Use maintainer role instead of admin                  |
-| 5   | v1.3.1  | N/A                                                                                  | - Use maintainer role instead of admin (based on 1.3.0) |
-| 6   | v1.4.0  | add `-h` and `--help` argument to show command usage                                 | N/A                                                     |
+| 5   | v1.2.2  | N/A                                                                                  | - Command Debugging Output                              |
+| 6   | v1.3.1  | N/A                                                                                  | - Use maintainer role instead of admin (based on 1.3.0) |
+| 7   | v1.3.5  | N/A                                                                                  | - Command Debugging Output                              |
+| 8   | v1.4.0  | add `-h` and `--help` argument to show command usage                                 | N/A                                                     |
 
 ### archive-bigquery & restore-bigquery
 Available from **v1.4.0**.
