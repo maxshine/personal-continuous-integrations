@@ -1,6 +1,7 @@
 FROM python:3.10.11-slim-bullseye
 
-ARG POETRY_VERSION=1.8.3
+ARG POETRY_VERSION=2.2.1
+
 RUN pip install --upgrade pip virtualenv && mkdir /app && python3 -m virtualenv /app/venv
 ENV VIRTUAL_ENV="/app/venv"
 ENV PATH="/app/venv/bin/:$PATH:/root/.local/bin/"

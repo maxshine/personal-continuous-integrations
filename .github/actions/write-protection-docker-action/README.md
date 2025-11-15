@@ -1,4 +1,43 @@
-## This is an action to run against a GITHUB pull request, checking any protected files changed
+## This is an action to run against a GITHUB pull request, force a workflow fail if a pull request attempts to modify a protected file.
+
+### Features
+1. Basically, check any specified files get changed by unprivileged users in a pull request.
+2. The target files can be specified via a Python styled RegEx in the`include-filter` and
+   a fine inclusion can be done via the another `exclude-filter` RegEx to exclude some exceptional files
+3. It supports the cross-forks check when `forked-repository-url` specified the forked repository and
+   then the action will pull the changes from the forked repository and check it against the action
+   hosting repository (where the action is defined and usually the target repository of pull request)
+4. Check can be skipped for administrative users listed in the parameter `admin-list`. Meanwhile,
+   to enhance the check security from users adding unwanted ones into the `admin-list`, the action can be
+   instructed to get `maintain` and `admin` roles collaborators from the host repository. This is activated
+   when both `github-access-token` and `github-repository-name` are specified.
+
+> [!CAUTION]
+> This action is only designed to be used in a pull request workflow, and it will fail the workflow even if the PR contains 
+> modifications by authorized users against protected files, but the PR is created by an unprivileged user.  
+> This action DOES NOT check the actual author of every commit in the pull request. However, it only deems the author of the 
+> pull request itself as the author of all changes, which is available from `github.actor` in the workflow context.  
+> The philosophy is that the pull request is created by a user, and the user should be responsible for all changes in the pull request.
+
+> [!NOTE]  
+> Additions of files are not in the scope of check, which means if a protected file is added newly in a pull request,
+> the action will NOT block the pull request even if the author is unprivileged.
+
+### Synopsis in Workflow
+The example shows how to use this action to protect files under `.ci` and `.github` directories
+The trusted admins will be listed via repository maintain and admin roles
+```
+- name: Protect File Change By Pull Request
+  id: check-protected-files
+  uses: maxshine/publish-protect-file-change-action@v1
+  with:
+    acting-user: ${{ github.actor }}
+    merge-ref: origin/${{ github.event.pull_request.base.ref }}
+    head-ref: ${{ github.event.pull_request.head.sha }}
+    include-filter: '^ci/.*$|^.github/.*$'
+    github-access-token: ${{ secrets.GITHUB_TOKEN }}
+    github-repository-name: ${{ github.repository }}
+```
 
 ### Inputs
 1. `head-ref`: Required. The head git reference in a pull request, which can be fetched from `github.event.pull_request.head.sha`. 
