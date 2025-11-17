@@ -46,6 +46,13 @@ N/A
 - Bugfix
   1. Fetch `maintain` role collaborators instead of `admin`, which will still include the `admin collaborators
 
+### v1.2.2 (bugfix release succeeding from v1.2.1)
+- Features  
+N/A
+
+- Bugfix
+  1. Add debugging outputs to clearly show the case when no files are included for check due to the `include-filter`  
+
 ### v1.3.0
 - Features  
 N/A
@@ -75,6 +82,13 @@ N/A
 N/A
 - Bugfix  
 N/A
+
+### v1.3.5 (bugfix release succeeding from v1.3.4)
+- Features  
+N/A
+
+- Bugfix
+  1. Add debugging outputs to clearly show the case when no files are included for check due to the `include-filter`  
 
 ### v1.4.1 (collateral release succeeding from v1.3.4 to latest codebase)
 - Features  
