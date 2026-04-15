@@ -72,3 +72,7 @@ N/A
 1. Use [uv](https://github.com/astral-sh/uv) as package installer to speed up runtime building up.
 - Bugfix
 1. When multiple tests defined in the row, make sure all tests are executed from the same working directory.
+
+### v1.4.5 (feature release succeeding from v1.4.4)
+- Features  
+  1. Upgrade to Debian Trixie base image
