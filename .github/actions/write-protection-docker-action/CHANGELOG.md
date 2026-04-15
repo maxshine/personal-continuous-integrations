@@ -53,3 +53,6 @@ N/A
 - Bugfix
   1. Add debugging outputs to clearly show the case when no files are included for check due to the `include-filter`  
 
+### v1.2.3 (bugfix release succeeding from v1.2.2)
+- Features  
+  1. Upgrade to Debian Trixie base container  
