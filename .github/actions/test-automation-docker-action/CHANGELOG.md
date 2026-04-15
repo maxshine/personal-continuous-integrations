@@ -48,6 +48,13 @@ N/A
 - Bugfix
 N/A
 
+### v1.3.6 (feature release succeeding from v1.3.5)
+- Features  
+  1. Upgrade to Debian Trixie base container
+ 
+- Bugfix
+N/A  
+
 ### v1.4.1 (collateral release succeeding from v1.3.4 to latest codebase)
 - Features
 N/A
