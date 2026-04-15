@@ -56,6 +56,9 @@ N/A
 ### v1.2.3 (feature release succeeding from v1.2.2)
 - Features
   1. Upgrade to Debian Trixie base container
+ 
+- Bugfix
+N/A  
 
 ### v1.3.0
 - Features  
@@ -96,4 +99,7 @@ N/A
  
 ### v1.3.6 (feature release succeeding from v1.3.5)
 - Features  
-  1. Upgrade to Debian Trixie base container  
+  1. Upgrade to Debian Trixie base container
+ 
+- Bugfix
+N/A  
