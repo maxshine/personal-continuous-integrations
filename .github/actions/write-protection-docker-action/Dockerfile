@@ -1,4 +1,4 @@
-FROM python:3.12.11-slim-bookworm
+FROM python:3.12.13-slim-trixie
 
 RUN apt update && apt install -y git curl && apt clean \
     && curl -LsSf https://astral.sh/uv/install.sh | sh \
