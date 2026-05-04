@@ -83,3 +83,4 @@ N/A
 ### v1.4.5 (feature release succeeding from v1.4.4)
 - Features  
   1. Upgrade to Debian Trixie base image
+  2. Upgrade to DBT Core 1.11.8 with Bigquery adapter 1.11.1
