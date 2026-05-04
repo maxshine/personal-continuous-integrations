@@ -31,4 +31,4 @@ Refer to [the README](/src/customizable_continuous_integration/automations/comma
 |:----|:--------|:-----------|:-----------------------------------------------------------------------------|
 | 1   | v1.4.3  | 2025-07-04 | Tested and Declared support of Python 3.12                                   |
 | 2   | v1.4.4  | 2025-10-10 | Compatible with poetry and uv dependency managing tools; Requires poetry v2+ |
-| 3   | v1.4.5  | TBD        | Debian Trixie base container                                                 |
+| 3   | v1.4.5  | TBD        | Debian Trixie base container; DBT 1.11 stack upgrade                         |
