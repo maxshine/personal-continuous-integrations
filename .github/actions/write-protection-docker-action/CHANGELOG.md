@@ -131,7 +131,6 @@ N/A
 ### v1.4.5 (feature release succeeding from v1.4.4)
 - Features  
   1. Upgrade to Debian Trixie base image
-
 - Bugfix
   1. Add debugging outputs to clearly show the case when no files are included for check due to the `include-filter`  
 
