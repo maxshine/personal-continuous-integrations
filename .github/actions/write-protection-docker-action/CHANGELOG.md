@@ -89,3 +89,4 @@ N/A
 
 - Bugfix
   1. Add debugging outputs to clearly show the case when no files are included for check due to the `include-filter`  
+  2. Handle `github-actions[bot]` username properly when it is included in the admin-list or fetched from the repository collaborators with maintain role
