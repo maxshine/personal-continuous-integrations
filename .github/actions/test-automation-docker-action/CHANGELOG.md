@@ -48,6 +48,13 @@ N/A
 - Bugfix
 N/A
 
+### v1.3.6 (feature release succeeding from v1.3.5)
+- Features  
+  1. Upgrade to Debian Trixie base container
+ 
+- Bugfix
+N/A  
+
 ### v1.4.1 (collateral release succeeding from v1.3.4 to latest codebase)
 - Features
 N/A
@@ -73,8 +80,7 @@ N/A
 - Bugfix
 1. When multiple tests defined in the row, make sure all tests are executed from the same working directory.
 
-### v1.4.5 (feature & bugfix release succeeding from v1.4.4)
+### v1.4.5 (feature release succeeding from v1.4.4)
 - Features  
-N/A
-- Bugfix  
-N/A
+  1. Upgrade to Debian Trixie base image
+  2. Upgrade to DBT Core 1.11.8 with Bigquery adapter 1.11.1

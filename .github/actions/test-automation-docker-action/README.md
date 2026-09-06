@@ -46,7 +46,7 @@ Please refer to the [Changelog](CHANGELOG.md) for details, especially the availa
 ```
 The MIT License (MIT)
 
-Copyright (c) 2024,2025 Ryan Gao (ryangao-au@outlook.com)
+Copyright (c) 2024-2026 Ryan Gao (ryangao-au@outlook.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
