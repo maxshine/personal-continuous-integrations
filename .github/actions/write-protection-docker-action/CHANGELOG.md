@@ -55,6 +55,6 @@ N/A
 
 ### v1.2.3 (feature release succeeding from v1.2.2)
 - Features  
-  1. Upgrade to Debian Trixie base container  
-- Bugfix
 N/A
+- Bugfix
+1. Handle github-actions[bot] username properly when it is included in the admin-list or fetched from the repository collaborators with maintain role
