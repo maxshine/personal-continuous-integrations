@@ -10,6 +10,7 @@
 # -----------------------------------------------------------------------------
 #   01/09/2024     Ryan, Gao       Created this script
 #   03/09/2024     Ryan, Gao       Add more cmdline options preceding env
+#   06/09/2026     Ryan, Gao       Fix github-action[bot] user check
 #
 # Inputs:
 #   Environmental Variables:
@@ -55,7 +56,7 @@ function is_admin_user() {
   OIFS=$IFS
   IFS=";"
   for admin in ${ADMINISTRATIVE_USERS}; do
-    if [[ $1 == $admin ]]; then
+    if [[ "$1" == "$admin" ]]; then
       IFS=$OIFS
       return 1
     fi
