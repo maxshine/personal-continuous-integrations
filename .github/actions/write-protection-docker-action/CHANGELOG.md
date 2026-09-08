@@ -135,3 +135,8 @@ N/A
   1. Add debugging outputs to clearly show the case when no files are included for check due to the `include-filter`
   2. Handle `github-actions[bot]` username properly when it is included in the `admin-list` or fetched from the repository collaborators with `maintain` role
 
+### v1.4.6 (bugfix release succeeding from v1.4.5)
+- Features    
+N/A
+- Bugfix  
+  1. Get rid of non-critical exceptions from debugging logging due to incorrect message format.

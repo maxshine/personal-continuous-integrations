@@ -84,3 +84,9 @@ N/A
 - Features  
   1. Upgrade to Debian Trixie base image
   2. Upgrade to DBT Core 1.11.8 with Bigquery adapter 1.11.1
+
+### v1.4.6 (collateral release succeeding from v1.4.5)
+- Features    
+N/A
+- Bugfix  
+N/A

@@ -1,6 +1,6 @@
 [project]
 name = "customizable_continuous_integration"
-version = "1.4.5"
+version = "1.4.6"
 description = "The Ryan's CI automation project"
 authors = [{ name = "Ryan,Gao", email = "ryangao-au@outlook.com" }]
 license = "MIT"
